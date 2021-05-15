@@ -17,6 +17,8 @@ jobs:
         target: html5
     - name: Build
       run: haxelib run lime build html5 -final
+    - name: Install xmllint
+      run: sudo apt-get update
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
