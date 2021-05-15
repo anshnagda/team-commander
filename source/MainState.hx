@@ -20,6 +20,8 @@ class MainState extends FlxState
 	var playerState:PlayerState;
 	var rand:FlxRandom;
 
+	var started:Bool = false;
+
 	// var shopState:ShopState;
 	// var mergeState:MergeState;
 	// var currentMainSequenceStage:FlxState; // stores the current main sequence stage (level, reward, event)
@@ -46,6 +48,12 @@ class MainState extends FlxState
 
 	function clickPlayLog()
 	{
+		if (started)
+		{
+			return;
+		}
+		started = true;
+		remove(playButton);
 		playerState.log.startNewSession(this.playerState.userID, clickPlay);
 	}
 
