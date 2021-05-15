@@ -10,13 +10,13 @@ jobs:
       with:
         persist-credentials: false
     - uses: lix-pm/setup-lix@master
+    - name: Install xmllint
+      run: sudo apt-get update
     - uses: HaxeFlixel/setup-flixel@master
       with:
         haxe-version: stable
         flixel-versions: release
         target: html5
-    - name: Install xmllint
-      run: sudo apt-get update
     - name: Build
       run: haxelib run lime build html5 -final
     - name: Deploy
