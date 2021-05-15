@@ -1,3 +1,4 @@
+
 name: CI
 
 on: [push, pull_request, repository_dispatch]
@@ -9,9 +10,8 @@ jobs:
     - uses: actions/checkout@v2
       with:
         persist-credentials: false
+    - run: sudo apt-get update
     - uses: lix-pm/setup-lix@master
-    - name: Install xmllint
-      run: sudo apt-get update
     - uses: HaxeFlixel/setup-flixel@master
       with:
         haxe-version: stable
