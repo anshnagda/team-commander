@@ -91,7 +91,7 @@ class PlayerState
 			current_stage = 2;
 			current_level = 3;
 		}
-		log = new CapstoneLogger(202103, "teamcom", "a084a2b104ca9f35a535f65ed467d3c9", 1);
+		log = new CapstoneLogger(202103, "teamcom", "a084a2b104ca9f35a535f65ed467d3c9", 2);
 		userID = log.getSavedUserId();
 		if (userID == null)
 		{
