@@ -127,6 +127,10 @@ class MainState extends FlxState
 		{
 			this.playerState.changeLevel(currStage, currLevel + 1);
 		}
+		if (!Main.DEV_ENABLED)
+		{
+			playerState.log.logLevelStart(this.playerState.current_level + (this.playerState.current_stage - 1) * 5);
+		}
 		playerState.unitInShop = null;
 		playerState.unitPriceInShop = null;
 		playerState.rerollCost = 0;
