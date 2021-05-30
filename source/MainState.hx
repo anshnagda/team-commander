@@ -45,10 +45,10 @@ class MainState extends FlxState
 		time = 0;
 		
 
-		if (Main.DEV_ENABLED)
-		{
+		//if (Main.DEV_ENABLED)
+		//{
 			clickPlay(true);
-		}
+		//}
 	}
 
 	function clickPlayLog()
