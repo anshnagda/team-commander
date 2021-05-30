@@ -151,7 +151,7 @@ class UnitData
 			case "ashen lord":
 				return new Stats(5000, 250, 1, 99, 0, 1, 50);
 			case "fire elemental":
-				return new Stats(1500, 50, 1, 5, 0, 0);
+				return new Stats(750, 50, 1, 5, 0, 0);
 			case "joker":
 				return new Stats(2000, 250, 1, 2, 3, 3);
 			case "overlord":

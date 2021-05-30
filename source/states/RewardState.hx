@@ -288,7 +288,7 @@ class RewardState extends FlxState
 				{
 					// weapon cards (100, 0, 0)
 					// fixed Gold + 50
-					populateWeapon(weaponToChoose, 30, 60, 10);
+					populateWeapon(weaponToChoose, 33, 60, 7);
 					populateStaticReward(100);
 				}
 				else if (level == 3)
