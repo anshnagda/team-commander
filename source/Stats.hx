@@ -60,14 +60,12 @@ class Stats
 		mv += other.mv;
 		spd += other.spd;
 
-		eva *= other.eva;
 		shield += other.shield;
 		crit += other.crit;
 		lifeSteal += other.lifeSteal;
-		damageReduction *= other.damageReduction;
-		//damageReduction = Std.int(Math.min(damageReduction, 90));
-		damageReductionMaxHp *= other.damageReductionMaxHp;
-		//damageReductionMaxHp = Std.int(Math.min(damageReductionMaxHp, 90));
+		eva += other.eva;
+		damageReduction += other.damageReduction;
+		damageReductionMaxHp += other.damageReductionMaxHp;
 		this.pushbackPerAtt += other.pushbackPerAtt;
 	}
 
@@ -127,9 +125,9 @@ class Stats
 		map.set("Speed", spd);
 		map.set("Dmg Reduction", damageReduction);
 		map.set("Knockback", pushbackPerAtt);
-		map.set("Evasion %", eva);
-		map.set("Critical %", crit);
-		map.set("Lifesteal %", lifeSteal);
+		map.set("Evasion", eva);
+		map.set("Critical", crit);
+		map.set("Lifesteal", lifeSteal);
 
 		return map;
 	}

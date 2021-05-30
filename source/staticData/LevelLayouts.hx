@@ -44,24 +44,9 @@ class LevelLayouts
 				switch level
 				{
 					case 1:
-						enemies_list.push([
-							enemyCreate(2, 3, "warrior"),
-							enemyCreateWithWeapon(3, 3, "warrior", "shield", null),
-							enemyCreate(4, 3, "warrior"),
-							enemyCreate(3, 1, "archer")
-						]);
-						enemies_list.push([
-							enemyCreate(2, 2, "warrior"),
-							enemyCreateWithWeapon(3, 1, "archer", "bow", null),
-							enemyCreate(3, 2, "mage"),
-							enemyCreate(2, 3, "mage")
-						]);
-						enemies_list.push([
-							enemyCreate(2, 1, "archer"),
-							enemyCreateWithWeapon(6, 3, "thief", "sword", null),
-							enemyCreate(3, 1, "archer"),
-							enemyCreate(1, 3, "thief")
-						]);
+						enemies_list.push([enemyCreate(2, 3, "rogue"), enemyCreate(2, 2, "rogue")]);
+						enemies_list.push([enemyCreate(2, 3, "warlock"), enemyCreate(7, 1, "rogue")]);
+						enemies_list.push([enemyCreate(0, 3, "knight"), enemyCreate(0, 2, "bard")]);
 					case 2:
 						enemies_list.push([
 							enemyCreate(2, 3, "warrior"),
@@ -91,9 +76,21 @@ class LevelLayouts
 							enemyCreate(6, 2, "slime")
 						];
 					case 4:
-						enemies_list.push([enemyCreate(2, 3, "rogue"), enemyCreate(2, 2, "rogue")]);
-						enemies_list.push([enemyCreate(2, 3, "warlock"), enemyCreate(7, 1, "rogue")]);
-						enemies_list.push([enemyCreate(0, 3, "knight"), enemyCreate(0, 2, "bard")]);
+						enemies_list.push([
+							enemyCreate(2, 3, "warrior"),
+							enemyCreateWithWeapon(3, 3, "knight", "shield", null),
+							enemyCreate(3, 1, "archer")
+						]);
+						enemies_list.push([
+							enemyCreate(2, 2, "warrior"),
+							enemyCreateWithWeapon(3, 1, "bard", "bow", null),
+							enemyCreate(2, 3, "warlock")
+						]);
+						enemies_list.push([
+							enemyCreate(2, 1, "archer"),
+							enemyCreateWithWeapon(6, 3, "ranger", "sword", null),
+							enemyCreate(1, 3, "ranger")
+						]);
 					case 5:
 						enemy_list = [enemyCreate(3, 3, "champion")];
 					case _:
@@ -230,8 +227,8 @@ class LevelLayouts
 						]);
 						enemies_list.push([
 							enemyCreateWithWeapon(4, 2, "archmage", "mugen cap", "shield"),
-							enemyCreateWithWeapon(3, 3, "valkyrie", "silk steps", "greataxe"),
-							enemyCreateWithWeapon(4, 3, "valkyrie", "silk steps", "greataxe")
+							enemyCreateWithWeapon(3, 3, "valkyrie", "silk steps", null),
+							enemyCreateWithWeapon(4, 3, "valkyrie", "silk steps", null)
 						]);
 						enemies_list.push([
 							enemyCreateWithWeapon(0, 0, "artillery", "gun", null),
@@ -256,7 +253,6 @@ class LevelLayouts
 						enemies_list.push([
 							enemyCreateWithWeapon(1, 1, "bloodmancer", "sword of ruin", null),
 							enemyCreateWithWeapon(6, 1, "bloodmancer", "sword of ruin", null),
-							enemyCreateWithWeapon(2, 3, "knight", "reinforced armor", null),
 							enemyCreateWithWeapon(3, 3, "knight", "reinforced armor", null),
 							enemyCreateWithWeapon(4, 3, "knight", "reinforced armor", null),
 							enemyCreateWithWeapon(5, 3, "knight", "reinforced armor", null),
@@ -278,7 +274,7 @@ class LevelLayouts
 							enemyCreateWithWeapon(1, 1, "enforcer", "harpoon", "reinforced armor"),
 							enemyCreateWithWeapon(6, 1, "enforcer", "reinforced armor", "spiked flail"),
 							enemyCreateWithWeapon(3, 3, "warrior", "sword", "shield"),
-							enemyCreateWithWeapon(3, 4, "warrior", "sword", "shield"),
+							enemyCreateWithWeapon(4, 3, "warrior", "sword", "shield"),
 						]);
 						enemies_list.push([
 							enemyCreateWithWeapon(3, 1, "laureate", "harpoon", "reinforced armor"),
@@ -321,7 +317,7 @@ class LevelLayouts
 							enemyCreateWithWeapon(2, 1, "ranger", "mugen cap", null),
 							enemyCreateWithWeapon(5, 1, "ranger", "mugen cap", null),
 							enemyCreateWithWeapon(1, 2, "samurai", "bladed cuffs", "shield"),
-							enemyCreateWithWeapon(5, 2, "samurai", "bladed cuffs", "shield"),
+							enemyCreateWithWeapon(6, 2, "samurai", "bladed cuffs", "shield"),
 						]);
 
 					case 5:

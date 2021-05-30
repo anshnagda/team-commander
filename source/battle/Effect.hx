@@ -69,7 +69,7 @@ class Effect
 				affectedUnits.remove(victim.unit);
 				if (attacker.turnCompleted % 2 == 0)
 				{
-					aoeRoundTargets(affectedUnits, attacker.getCoor(), 1, Math.round(attacker.unit.currStats.atk / 2), attacker.unit.enemy, grid);
+					aoeRoundTargets(affectedUnits, attacker.getCoor(), 2, Math.round(attacker.unit.currStats.atk / 2), attacker.unit.enemy, grid);
 				}
 				else
 				{
@@ -83,22 +83,31 @@ class Effect
 				}
 
 			case 34: // Fire Elemental
+				affectedUnits[victim.unit] = new BattleDamage(finalDamage);
 				for (unit in eneU)
 				{
 					if (unitStates[unit].bomb)
 					{
-						squareAOE(affectedUnits, attacker.getCoor(), 3, 3, 0, grid, victim.unit.enemy);
+						var currRound = new Map<Unit, BattleDamage>();
+						squareAOE(currRound, unitStates[unit].getCoor(), 3, 3, 0, grid, victim.unit.enemy);
+						if (currRound[unit] == null)
+						{
+							currRound[unit] = new BattleDamage();
+						}
 						// 25% of current health
-						if (affectedUnits[unit] == null)
+						for (tar in currRound.keys())
 						{
-							affectedUnits[unit] = new BattleDamage();
+							currRound[tar].trueDamage += Math.round(tar.maxHp * 0.15);
+							grid.archmage_attack(unitStates[tar].getCoor());
+							if (affectedUnits[tar] == null)
+							{
+								affectedUnits[tar] = new BattleDamage(0, currRound[tar].trueDamage);
+							}
+							else
+							{
+								affectedUnits[tar].trueDamage += currRound[tar].trueDamage;
+							}
 						}
-						for (unit in affectedUnits.keys())
-						{
-							affectedUnits[unit].trueDamage += Math.round(unit.maxHp / 4);
-							grid.archmage_attack(unitStates[unit].getCoor());
-						}
-						trace(affectedUnits);
 					}
 					else
 					{
@@ -458,8 +467,10 @@ class Effect
 				}
 			}
 			var weakestUnit = hittableUnits[0];
-			for (target in hittableUnits) {
-				if (target.currStats.hp < weakestUnit.currStats.hp) {
+			for (target in hittableUnits)
+			{
+				if (target.currStats.hp < weakestUnit.currStats.hp)
+				{
 					weakestUnit = target;
 				}
 			}
@@ -696,6 +707,7 @@ class Effect
 	private static function squareAOE(affectedUnits:Map<Unit, BattleDamage>, origin:Point, length:Int, width:Int, damage:Int, grid:BattleGrid, side:Bool,
 			trueDamage:Int = 0)
 	{
+		var visited = new Array<Point>();
 		var lLimits = Std.int(length / 2);
 		var wLimits = Std.int(width / 2);
 		for (i in -lLimits...lLimits + 1)
@@ -706,7 +718,16 @@ class Effect
 				{
 					continue;
 				}
+
 				var pt = new Point(origin.x + i, origin.y + j);
+				if (BattleCalculator.contains(visited, pt))
+				{
+					continue;
+				}
+				else
+				{
+					visited.push(pt);
+				}
 				if (grid.unitGrid[pt.x][pt.y] != null && grid.unitGrid[pt.x][pt.y].enemy == side)
 				{
 					if (affectedUnits[grid.unitGrid[pt.x][pt.y]] == null)
@@ -748,7 +769,8 @@ class Effect
 	private static function percentageChance(chance:Int)
 	{
 		var r = new FlxRandom();
-		return r.int(1, 100) <= chance;
+		var cutOff = Math.round(100 * (1 - 1 / (1 + chance / 100)));
+		return r.int(1, 100) <= cutOff;
 	}
 
 	private static function furthest(location:Point, eneU:Array<Unit>, unitStates:Map<Unit, UnitBattleState>)

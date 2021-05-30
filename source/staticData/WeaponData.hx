@@ -78,9 +78,9 @@ class WeaponData
 			case "harpoon":
 				return Stats.WeaponStat(25, 60, 1, 0, -1);
 			case "plated boots":
-				return Stats.WeaponStat(65, 0, 0, 1, 1, 0, 0, 8);
+				return Stats.WeaponStat(65, 0, 0, 1, 1, 0, 0, 15);
 			case "reinforced armor":
-				return Stats.WeaponStat(150, -30, 0, 0, -2, 0, 0, 20);
+				return Stats.WeaponStat(150, -30, 0, 0, -2, 0, 0, 25);
 			case "silk steps":
 				return Stats.WeaponStat(30, -30, 0, 2, 1, 15);
 			case "spiked flail":
@@ -90,23 +90,23 @@ class WeaponData
 			case "greataxe":
 				return Stats.WeaponStat(60, 65, 0, 0, 1);
 			case "apollo's trail":
-				return Stats.WeaponStat(75, 0, 0, 10, 10, 20);
+				return Stats.WeaponStat(75, 0, 0, 10, 10, 35);
 			case "astral armor":
-				return Stats.WeaponStat(300, -50, 0, 0, -3, 0, 0, 35);
+				return Stats.WeaponStat(300, -50, 0, 0, -3, 0, 0, 50);
 			case "bloodthirster":
 				return Stats.WeaponStat(150, 100, 0, 1, 1, 0, 50);
 			case "bone ward":
 				return Stats.WeaponStat(175, 35, -1, 0, -2);
 			case "dragonslayer":
-				return Stats.WeaponStat(100, 125, 2, 0, 0);
+				return Stats.WeaponStat(100, 125, 2, 0, 0, 0, 15);
 			case "exalted staff":
-				return Stats.WeaponStat(75, 75, 0, 0, 2, 10, 0, 10);
+				return Stats.WeaponStat(75, 75, 0, 0, 2, 12, 0, 12);
 			case "mugen cap":
 				return Stats.WeaponStat(-50, 175, 2, 1, 0);
 			case "sword of ruin":
-				return Stats.WeaponStat(0, 150, 1, 0, -1);
+				return Stats.WeaponStat(0, 75, -1, 0, -3);
 			case "tempest bow":
-				return Stats.WeaponStat(50, 100, 1, 1, 2, 25, 0, 0, 2);
+				return Stats.WeaponStat(0, 100, 1, 1, 2, 50, 0, 0, 2);
 			case "gun":
 				return Stats.WeaponStat(0, 150, 5, 0, 3);
 			case _:

@@ -133,7 +133,7 @@ class UnitData
 			case "all-seeing eye":
 				return new Stats(1000, 120, 0, 100, 0, 1);
 			case "slime":
-				return new Stats(32, 6, 1, 1, 1, 1);
+				return new Stats(30, 5, 1, 1, 1, 1);
 			case "champion":
 				return new Stats(2000, 100, 1, 1, 3, 1);
 			case "mothership":
@@ -149,11 +149,11 @@ class UnitData
 			case "queen":
 				return new Stats(500, 225, 1, 1, 20, 10);
 			case "ashen lord":
-				return new Stats(5000, 250, 1, 99, 0, 1, 50);
+				return new Stats(4000, 250, 1, 99, 0, 1, 50);
 			case "fire elemental":
-				return new Stats(750, 50, 1, 5, 0, 0);
+				return new Stats(500, 50, 1, 5, 0, 0);
 			case "joker":
-				return new Stats(2000, 250, 1, 2, 3, 3);
+				return new Stats(1250, 225, 1, 2, 3, 3);
 			case "overlord":
 				return new Stats(4000, 250, 0, 99, 0, 5);
 			case "withering soul":
@@ -273,7 +273,7 @@ class UnitData
 				];
 			case "ashen lord":
 				return [
-					"All your units get marked. Every turn, the mark explodes, dealing 25% of the unit's health to nearby spaces",
+					"All your units get marked. Every turn, the mark explodes, dealing 15% of the unit's health to nearby spaces",
 					"Gain 50% dodge if a fire elemental is alive"
 				];
 			case "fire elemental":

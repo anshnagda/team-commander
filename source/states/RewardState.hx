@@ -238,7 +238,7 @@ class RewardState extends FlxState
 				{
 					// weapon cards (100, 0, 0)
 					// fixed Gold + 50
-					populateWeapon(weaponToChoose, 90, 10, 0);
+					populateWeapon(weaponToChoose, 85, 15, 0);
 					populateStaticReward(50);
 				}
 				else if (level == 3)
@@ -246,7 +246,7 @@ class RewardState extends FlxState
 					// random unit fixed card
 					// fixed Gold + 100
 					// weapon cards(100, 0, 0)
-					populateWeapon(weaponToChoose, 50, 50, 0);
+					populateWeapon(weaponToChoose, 30, 70, 0);
 					populateStaticReward(100);
 				}
 				else
@@ -272,7 +272,7 @@ class RewardState extends FlxState
 					// fixed Gold + 100
 					// weapon cards(100, 0, 0)
 					populateWeapon(weaponToChoose, 0, 85, 15);
-					populateStaticReward(125);
+					populateStaticReward(150);
 				}
 				else
 				{ // BOSS
@@ -297,7 +297,7 @@ class RewardState extends FlxState
 					// fixed Gold + 100
 					// weapon cards(100, 0, 0)
 					populateWeapon(weaponToChoose, 0, 50, 50);
-					populateStaticReward(150);
+					populateStaticReward(200);
 				}
 				else
 				{ // BOSS
