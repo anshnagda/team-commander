@@ -47,7 +47,21 @@ class Weapon extends Snappable
 
 		loadGraphic(WeaponData.weaponIDToSpritePath(weaponID));
 		// this.color = FlxColor.YELLOW;  why yellow?
-		this.price = Font.makeText(x, y + 36, 48, "50", 16);
+
+		if (WeaponData.weaponToRarity[weaponID] == "rare")
+		{
+			rarity = 2;
+		}
+		else if (WeaponData.weaponToRarity[weaponID] == "uncommon")
+		{
+			rarity = 1;
+		}
+		else
+		{
+			rarity = 0;
+		}
+
+		this.price = Font.makeText(x, y + 36, 48, Std.string(Std.int(ShopState.PRICE[rarity] / 4)), 16);
 
 		this.clicked_graphics = function() {};
 		this.detached_graphics = function()
@@ -66,7 +80,7 @@ class Weapon extends Snappable
 			else
 			{
 				setGraphicSize(48, 48);
-				price.text = "50";
+				price.text = Std.string(Std.int(ShopState.PRICE[rarity] / 4));
 				updateHitbox();
 			}
 		};
@@ -74,19 +88,6 @@ class Weapon extends Snappable
 		// Initialize stats and hover box
 		stats = WeaponData.weaponIDToStats(weaponID);
 		this.hover = new HoverText(0, 0, this);
-
-		if (weaponID < 50)
-		{
-			rarity = 0;
-		}
-		else if (weaponID < 100)
-		{
-			rarity = 1;
-		}
-		else
-		{
-			rarity = 2;
-		}
 	}
 
 	override function rendering_order()
@@ -99,7 +100,7 @@ class Weapon extends Snappable
 		{
 			if (slot.owner != null)
 			{
-				if (slot.owner.clicked)
+				if (!slot.owner.clicked)
 				{
 					return -1;
 				}
@@ -113,6 +114,7 @@ class Weapon extends Snappable
 	{
 		var s = slot;
 		super.detach();
+		price.text = Std.string(Std.int(ShopState.PRICE[rarity] / 4));
 		if (s == null)
 		{
 			return;
@@ -135,6 +137,7 @@ class Weapon extends Snappable
 		{
 			var unit = cast(s.owner, Unit);
 			unit.updateStats();
+			price.text = "";
 		}
 		return ret;
 	}
@@ -193,9 +196,7 @@ class Weapon extends Snappable
 
 	override public function getInfo()
 	{
-		trace(weaponName);
-		trace(weaponID);
-		var title = weaponName.toUpperCase();
+		var title = weaponName.toUpperCase() + " (" + WeaponData.weaponToRarity[weaponID] + ")";
 		var body = "";
 		var map = this.stats.toMapWeapon();
 		for (key in map.keys())
@@ -215,7 +216,15 @@ class Weapon extends Snappable
 			}
 			body += text + "\n";
 		}
-		return {title: title, body: body, rarity: "basic"};
+
+		// Add ability info
+		var ability = WeaponData.weaponIdToAbility(weaponID);
+		if (ability != "")
+		{
+			body += "\n";
+			body += ability + "\n";
+		}
+		return {title: title, body: body, rarity: WeaponData.weaponToRarity[weaponID]};
 	}
 
 	override function pixelsOverlapPoint(point:FlxPoint, Mask:Int = 0xFF, ?Camera:FlxCamera):Bool

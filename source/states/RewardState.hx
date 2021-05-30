@@ -5,6 +5,8 @@ import attachingMechanism.SnappableInfo;
 import entities.*;
 import flixel.FlxState;
 import flixel.addons.nape.FlxNapeVelocity;
+import flixel.addons.ui.FlxButtonPlus;
+import flixel.addons.ui.FlxButtonPlus;
 import flixel.group.FlxGroup;
 import flixel.math.FlxPoint;
 import flixel.text.FlxText.FlxTextAlign;
@@ -15,10 +17,12 @@ import flixel.ui.FlxButton;
 import flixel.util.FlxColor;
 import grids.*;
 import haxe.Constraints.Function;
+import haxe.Timer;
 import js.html.Console;
 import rewardCards.Card;
 import rewardCards.UnitCard;
 import rewardCards.WeaponCard;
+import staticData.Buttons;
 import staticData.Font;
 
 // Class that will render the reward page
@@ -62,7 +66,8 @@ class RewardState extends FlxState
 		//--------- start --------------
 		//---------- end ------------
 
-		var returnButton = new FlxButton(650, 550, "Next Stage", returnToLevel);
+		var returnButton = Buttons.makeButton(650, 450, 96, 48, returnToLevel, "Next Level", 16);
+		returnButton.borderColor = FlxColor.BLACK;
 		add(returnButton);
 	}
 
@@ -70,7 +75,16 @@ class RewardState extends FlxState
 	{
 		remove(unitChosen);
 		remove(weaponChosen);
-		endRewardCallBack();
+		if (this.unitChosen == null && this.weaponChosen == null)
+		{
+			var notice = new TutorialBox("Remember to select a reward!", 300, 255, "assets/images/box.png", false);
+			add(notice);
+			Timer.delay(() -> remove(notice), 1000);
+		}
+		else
+		{
+			endRewardCallBack();
+		}
 	}
 
 	// for unit selection
@@ -133,7 +147,7 @@ class RewardState extends FlxState
 	{
 		for (i in 0...3)
 		{
-			var card = new WeaponCard(i * (SnappableInfo.IMAGE_WIDTH + CARD_GAP) + CARD_LEFT_PADDING, CARD_Y, 100, 0, 0, selectedWeapon);
+			var card = new WeaponCard(i * (SnappableInfo.IMAGE_WIDTH + CARD_GAP) + CARD_LEFT_PADDING, CARD_Y, t1, t2, t3, selectedWeapon);
 			rewardToChoose.push(card);
 			add(card);
 			add(card.getWeapon());
@@ -146,7 +160,7 @@ class RewardState extends FlxState
 	{
 		for (i in 0...3)
 		{
-			var card = new UnitCard(i * (SnappableInfo.IMAGE_WIDTH + CARD_GAP) + CARD_LEFT_PADDING, CARD_Y, 100, 0, 0, selectedUnit, false);
+			var card = new UnitCard(i * (SnappableInfo.IMAGE_WIDTH + CARD_GAP) + CARD_LEFT_PADDING, CARD_Y, t1, t2, t3, selectedUnit, false);
 			rewardToChoose.push(card);
 			add(card);
 			add(card.getUnit());
@@ -156,20 +170,22 @@ class RewardState extends FlxState
 
 	private function populateStaticReward(goldReceived:Int)
 	{
-		var text = new flixel.text.FlxText(150, 400, 0, goldReceived + " Gold Received");
-		Font.setFormat(text, 32, 0xffffff);
-		text.borderColor = FlxColor.YELLOW;
-		text.borderStyle = FlxTextBorderStyle.OUTLINE;
+		var text = Font.makeText(150, 400, 0, goldReceived + " Gold Received", 48, FlxColor.BLACK, FlxTextAlign.LEFT, FlxColor.YELLOW);
+		// var text = new flixel.text.FlxText(150, 400, 0, goldReceived + " Gold Received");
+		// Font.setFormat(text, 32, 0xffffff);
+		// text.borderColor = FlxColor.YELLOW;
+		// text.borderStyle = FlxTextBorderStyle.OUTLINE;
 		this.player.addGold(goldReceived);
 		add(text);
 	}
 
 	private function increaseUnitCap()
 	{
-		var text1 = new flixel.text.FlxText(150, 450, 0, "Unit Capcity + 1");
-		Font.setFormat(text1, 32, 0xffffff);
-		text1.borderColor = FlxColor.CYAN;
-		text1.borderStyle = FlxTextBorderStyle.OUTLINE;
+		var text1 = Font.makeText(150, 480, 0, "Unit Capcity + 1", 48, FlxColor.BLACK, FlxTextAlign.LEFT, FlxColor.CYAN);
+		// var text1 = new flixel.text.FlxText(150, 450, 0, "Unit Capcity + 1");
+		// Font.setFormat(text1, 32, 0xffffff);
+		// text1.borderColor = FlxColor.CYAN;
+		// text1.borderStyle = FlxTextBorderStyle.OUTLINE;
 		this.player.addUnitCapacity();
 		add(text1);
 	}
@@ -200,7 +216,7 @@ class RewardState extends FlxState
 					case 3:
 						// unit cards to choose
 						populateUnit(unitToChoose, 100, 0, 0);
-						var text2 = new flixel.text.FlxText(150, 500, 0, "Merge Tool Unlocked!");
+						var text2 = new flixel.text.FlxText(150, 550, 0, "Merge Tool Unlocked!");
 						Font.setFormat(text2, 32, 0xffffff);
 						text2.borderColor = FlxColor.CYAN;
 						text2.borderStyle = FlxTextBorderStyle.OUTLINE;
@@ -211,19 +227,18 @@ class RewardState extends FlxState
 						populateUnit(unitToChoose, 100, 0, 0);
 						populateStaticReward(100);
 						increaseUnitCap();
-						var text2 = new flixel.text.FlxText(150, 500, 0, "Shop Unlocked!");
+						var text2 = new flixel.text.FlxText(150, 550, 0, "Shop Unlocked!");
 						Font.setFormat(text2, 32, 0xffffff);
 						text2.borderColor = FlxColor.CYAN;
 						text2.borderStyle = FlxTextBorderStyle.OUTLINE;
 						add(text2);
-						trace(this.player.allied_units);
 				}
 			case 2:
-				if (level <= 2)
+				if (level <= 2 || level == 4)
 				{
 					// weapon cards (100, 0, 0)
 					// fixed Gold + 50
-					populateWeapon(weaponToChoose, 100, 0, 0);
+					populateWeapon(weaponToChoose, 90, 10, 0);
 					populateStaticReward(50);
 				}
 				else if (level == 3)
@@ -231,7 +246,7 @@ class RewardState extends FlxState
 					// random unit fixed card
 					// fixed Gold + 100
 					// weapon cards(100, 0, 0)
-					populateWeapon(weaponToChoose, 100, 0, 0);
+					populateWeapon(weaponToChoose, 50, 50, 0);
 					populateStaticReward(100);
 				}
 				else
@@ -244,8 +259,80 @@ class RewardState extends FlxState
 					populateWeapon(weaponToChoose, 0, 100, 0);
 				}
 			case 3: // to be added
+				if (level <= 2 || level == 4)
+				{
+					// weapon cards (100, 0, 0)
+					// fixed Gold + 50
+					populateWeapon(weaponToChoose, 70, 25, 5);
+					populateStaticReward(75);
+				}
+				else if (level == 3)
+				{
+					// random unit fixed card
+					// fixed Gold + 100
+					// weapon cards(100, 0, 0)
+					populateWeapon(weaponToChoose, 0, 85, 15);
+					populateStaticReward(125);
+				}
+				else
+				{ // BOSS
+					// random weapon(0, 100, 0) fixed card
+					// fixed gold + 200
+					// unit capacity++
+					populateStaticReward(250);
+					increaseUnitCap();
+					populateWeapon(weaponToChoose, 0, 0, 100);
+				}
 			case 4: // to be added
+				if (level <= 2 || level == 4)
+				{
+					// weapon cards (100, 0, 0)
+					// fixed Gold + 50
+					populateWeapon(weaponToChoose, 30, 60, 10);
+					populateStaticReward(100);
+				}
+				else if (level == 3)
+				{
+					// random unit fixed card
+					// fixed Gold + 100
+					// weapon cards(100, 0, 0)
+					populateWeapon(weaponToChoose, 0, 50, 50);
+					populateStaticReward(150);
+				}
+				else
+				{ // BOSS
+					// random weapon(0, 100, 0) fixed card
+					// fixed gold + 200
+					// unit capacity++
+					populateStaticReward(300);
+					increaseUnitCap();
+					populateWeapon(weaponToChoose, 0, 0, 100);
+				}
 			case 5: // to be added
+				if (level <= 2 || level == 4)
+				{
+					// weapon cards (100, 0, 0)
+					// fixed Gold + 50
+					populateWeapon(weaponToChoose, 0, 85, 15);
+					populateStaticReward(150);
+				}
+				else if (level == 3)
+				{
+					// random unit fixed card
+					// fixed Gold + 100
+					// weapon cards(100, 0, 0)
+					populateWeapon(weaponToChoose, 0, 20, 80);
+					populateStaticReward(300);
+				}
+				else
+				{ // BOSS
+					// random weapon(0, 100, 0) fixed card
+					// fixed gold + 200
+					// unit capacity++
+					populateStaticReward(300);
+					increaseUnitCap();
+					populateWeapon(weaponToChoose, 0, 0, 100);
+				}
 			case _:
 				return false;
 		}

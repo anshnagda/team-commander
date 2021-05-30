@@ -35,8 +35,14 @@ class WeaponCard extends Card
 			var randID = rand.int(0, WeaponData.commonWeapons.length - 1);
 			snappable = new Weapon(0, 0, randID, null);
 		}
-		else if (rarity <= t2 + t1) {}
-		else {}
+		else if (rarity <= t2 + t1) {
+			var randID = rand.int(WeaponData.commonWeapons.length, WeaponData.commonWeapons.length + WeaponData.uncommonWeapons.length - 1);
+			snappable = new Weapon(0, 0, randID, null);
+		}
+		else {
+			var randID = rand.int(WeaponData.commonWeapons.length + WeaponData.uncommonWeapons.length, WeaponData.commonWeapons.length + WeaponData.uncommonWeapons.length + WeaponData.rareWeapons.length - 1);
+			snappable = new Weapon(0, 0, randID, null);
+		}
 
 		super(x, y, select, snappable);
 	}

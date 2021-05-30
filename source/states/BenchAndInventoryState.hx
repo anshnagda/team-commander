@@ -13,21 +13,25 @@ import flixel.input.mouse.FlxMouseEventManager;
 import flixel.math.*;
 import flixel.math.FlxRandom;
 import flixel.text.FlxText;
+import flixel.ui.FlxButton;
 import flixel.util.FlxSort;
 import haxe.Constraints.Function;
 import js.lib.Uint8Array;
 import rewardCards.WeaponCard;
+import staticData.Buttons;
 
 class BenchAndInventoryState extends FlxState
 {
 	var playerState:PlayerState;
 	var endLevelCallback:Function;
+	var settingsButton:FlxButton;
 
 	public function new(playerState:PlayerState, endLevelCallback:Function)
 	{
 		super();
 		this.endLevelCallback = endLevelCallback;
 		this.playerState = playerState;
+		persistentUpdate = true;
 	}
 
 	override public function create()
@@ -78,6 +82,21 @@ class BenchAndInventoryState extends FlxState
 			weapon.force_attach(playerState.closestInventoryCoords); // any unattached weapons should go to the inventory
 			FlxMouseEventManager.add(weapon, weapon.mouseDown, weapon.mouseUp, weapon.mouseOver, weapon.mouseOut);
 		}
+
+		settingsButton = Buttons.makeImgButton(760, 10, "settings", openSettings);
+		add(settingsButton);
+	}
+
+	function openSettings()
+	{
+		var mouseEventManager = FlxG.plugins.get(FlxMouseEventManager);
+		FlxG.plugins.remove(mouseEventManager);
+
+		openSubState(new SettingsState(function()
+		{
+			closeSubState();
+			FlxG.plugins.add(mouseEventManager);
+		}, playerState));
 	}
 
 	public function makeUnitsHB(allied_unit:Unit)
@@ -135,6 +154,7 @@ class BenchAndInventoryState extends FlxState
 
 	public function addHover(hover:HoverText)
 	{
+		removeHover(hover);
 		this.add(hover);
 		this.add(hover.getTexts());
 	}

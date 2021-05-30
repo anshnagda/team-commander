@@ -1,6 +1,5 @@
 package rewardCards;
 
-import staticData.UnitData;
 import attachingMechanism.Snappable;
 import attachingMechanism.SnappableInfo;
 import entities.*;
@@ -14,7 +13,7 @@ import flixel.math.FlxRandom;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import haxe.Constraints.Function;
-import js.html.svg.AnimatedBoolean;
+import staticData.UnitData;
 
 class UnitCard extends Card
 {
@@ -40,8 +39,21 @@ class UnitCard extends Card
 				var randID = rand.int(0, UnitData.basicUnits.length - 1);
 				snappable = new Unit(0, 0, randID, null);
 			}
-			else if (rarity <= t2 + t1) {}
-			else {}
+			else if (rarity <= t2 + t1)
+			{
+				var randID = rand.int(UnitData.basicUnits.length, UnitData.advancedUnits.length + UnitData.basicUnits.length - 1);
+				snappable = new Unit(0, 0, randID, null);
+			}
+			else
+			{
+				var randID = rand.int(UnitData.advancedUnits.length
+					+ UnitData.basicUnits.length,
+					UnitData.advancedUnits.length
+					+ UnitData.basicUnits.length
+					+ UnitData.masterUnits.length
+					- 1);
+				snappable = new Unit(0, 0, randID, null);
+			}
 		}
 
 		super(x, y, select, snappable);

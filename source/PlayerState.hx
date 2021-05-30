@@ -10,6 +10,8 @@ import flixel.addons.plugin.FlxScrollingText.ScrollingTextData;
 import flixel.group.*;
 import flixel.input.mouse.FlxMouseEventManager;
 import flixel.math.FlxMath;
+import flixel.math.FlxRandom;
+import flixel.system.FlxSound;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import grids.*;
@@ -26,10 +28,12 @@ import staticData.WeaponData;
 @:publicFields
 class PlayerState
 {
+	public static var tutorial = true;
+
 	// var allied_units:FlxGroup = new FlxGroup();
 	var allied_units:FlxGroup = new FlxGroup();
 	var weapons:FlxGroup = new FlxGroup();
-	var gold:Int;
+	var gold:Int = 0;
 	var current_stage = 1;
 	var current_level = 1;
 	var unit_capcity = 1;
@@ -45,32 +49,56 @@ class PlayerState
 	var unitPriceInShop:Array<FlxText>;
 	var rerollCost:Int;
 	var inShope = false;
-	var firstTimeShop = true;
+	var firstTimeShop:Bool = true;
 
+	var firstTimeLose:Bool = true;
+
+	// var tutorial = true;
 	var mergeSlot1:SlotGrid;
 	var mergeSlot2:SlotGrid;
 	var mergeResultSlot:SlotGrid;
+
+	var advMergeSlot1:SlotGrid;
+	var advMergeSlot2:SlotGrid;
+	var advMergeSlot3:SlotGrid;
+	var advMergeResultSlot:SlotGrid;
 
 	var inMerge = false;
 
 	var log:CapstoneLogger;
 	var logData:LoggingData;
 
+	var sound:FlxSound;
+
 	var userID:String;
+
+	var livesRemaining = 3;
+	var numberOfLosses = 0;
+
+	var versionPlayed:Int; // note: 0 = Version A -> 3 lives   1 = Version B -> Infinite Lives
 
 	public function new()
 	{
+		sound = new FlxSound();
+		sound.volume = 0.3;
+		// PlayerState.tutorial = tutorial;
+
 		var unit = new Unit(20, 20, UnitData.unitIDs.get("warrior"), closestUnitSlotCoords); // change it so he is attached to bench
 		allied_units.add(unit);
 
 		if (Main.DEV_ENABLED)
 		{
-			for (i in 0...WeaponData.weaponNames.length)
+			for (i in 9...WeaponData.weaponNames.length)
 			{
 				var weapon = new Weapon(0, 0, i, closestWeaponSlotCoords);
 				weapons.add(weapon);
 			}
 
+			for (i in 14...24)
+			{
+				var unit = new Unit(20, 20, i, closestUnitSlotCoords);
+				allied_units.add(unit);
+			}
 			// var unit = new Unit(20, 20, 5, closestUnitSlotCoords); // change it so he is attached to bench
 			// allied_units.add(unit);
 			// var unit = new Unit(20, 20, 5, closestUnitSlotCoords); // change it so he is attached to bench
@@ -81,23 +109,47 @@ class PlayerState
 			// allied_units.add(unit);
 			// var unit = new Unit(20, 20, 5, closestUnitSlotCoords); // change it so he is attached to bench
 			// allied_units.add(unit);
-			var unit = new Unit(20, 20, 12, closestUnitSlotCoords); // change it so he is attached to bench
-			allied_units.add(unit);
-			var unit = new Unit(20, 20, 4, closestUnitSlotCoords); // change it so he is attached to bench
-			allied_units.add(unit);
 
-			gold = 10000;
-			unit_capcity = 4;
-			current_stage = 2;
-			current_level = 3;
+			gold = 999999999;
+			current_stage = 4;
+			current_level = 2;
+			// var unit = new Unit(20, 20, UnitData.unitIDs.get("warrior"), closestUnitSlotCoords); // change it so he is attached to bench
+			// allied_units.add(unit);
+
+			// var unit = new Unit(20, 20, UnitData.unitIDs.get("bard"), closestUnitSlotCoords); // change it so he is attached to bench
+			// allied_units.add(unit);
+
+			// var unit = new Unit(20, 20, UnitData.unitIDs.get("bard"), closestUnitSlotCoords); // change it so he is attached to bench
+			// allied_units.add(unit);
+
+			// var unit = new Unit(20, 20, UnitData.unitIDs.get("bard"), closestUnitSlotCoords); // change it so he is attached to bench
+			// allied_units.add(unit);
+			// var unit = new Unit(20, 20, UnitData.unitIDs.get("warlock"), closestUnitSlotCoords); // change it so he is attached to bench
+			// allied_units.add(unit);
+			// var unit = new Unit(20, 20, UnitData.unitIDs.get("archer"), closestUnitSlotCoords); // change it so he is attached to bench
+			// allied_units.add(unit);
+
+			// var weapon = new Weapon(0, 0, WeaponData.weaponIDs.get("bow"), closestWeaponSlotCoords);
+			// weapons.add(weapon);
+			// var weapon = new Weapon(0, 0, WeaponData.weaponIDs.get("bow"), closestWeaponSlotCoords);
+			// weapons.add(weapon);
+			// var weapon = new Weapon(0, 0, WeaponData.weaponIDs.get("shield"), closestWeaponSlotCoords);
+			// weapons.add(weapon);
+			// var weapon = new Weapon(0, 0, WeaponData.weaponIDs.get("sword"), closestWeaponSlotCoords);
+			// weapons.add(weapon);
+			// var weapon = new Weapon(0, 0, WeaponData.weaponIDs.get("tower shield"), closestWeaponSlotCoords);
+			// weapons.add(weapon);
 		}
-		log = new CapstoneLogger(202103, "teamcom", "a084a2b104ca9f35a535f65ed467d3c9", 2);
+		log = new CapstoneLogger(202103, "teamcom", "a084a2b104ca9f35a535f65ed467d3c9", 4);
 		userID = log.getSavedUserId();
 		if (userID == null)
 		{
 			userID = log.generateUuid();
 		}
 		logData = new LoggingData(this);
+		log.setSavedUserId(userID);
+		versionPlayed = ((hashString(userID) % 2) + 2) % 2;
+		trace("Version: " + versionPlayed);
 
 		// var weapon = new Weapon(100, 20, 2, closestWeaponSlotCoords);
 		// weapons.add(weapon);
@@ -109,9 +161,14 @@ class PlayerState
 
 		sellSlot = new Slot(() -> {x: 100, y: 400}, null);
 
-		mergeSlot1 = new SlotGrid(1, 1, 48, 100, 300, "assets/images/tiles/board.png", 1.0);
-		mergeSlot2 = new SlotGrid(1, 1, 48, 250, 300, "assets/images/tiles/board.png", 1.0);
-		mergeResultSlot = new SlotGrid(1, 1, 48, 400, 300, "assets/images/tiles/board.png", 1.0);
+		mergeSlot1 = new SlotGrid(1, 1, 48, 100, 360, "assets/images/tiles/board.png", 1.0);
+		mergeSlot2 = new SlotGrid(1, 1, 48, 250, 360, "assets/images/tiles/board.png", 1.0);
+		mergeResultSlot = new SlotGrid(1, 1, 48, 400, 360, "assets/images/tiles/board.png", 1.0);
+
+		advMergeSlot1 = new SlotGrid(1, 1, 48, 100, 150, "assets/images/tiles/board.png", 1.0);
+		advMergeSlot2 = new SlotGrid(1, 1, 48, 200, 150, "assets/images/tiles/board.png", 1.0);
+		advMergeSlot3 = new SlotGrid(1, 1, 48, 300, 150, "assets/images/tiles/board.png", 1.0);
+		advMergeResultSlot = new SlotGrid(1, 1, 48, 400, 150, "assets/images/tiles/board.png", 1.0);
 
 		numUnitsTextSprite = Font.makeText(battle_grid.x, 450, 384, "", 32, FlxColor.WHITE, FlxTextAlign.CENTER);
 	}
@@ -164,6 +221,43 @@ class PlayerState
 		weapon.findSlot = closestWeaponSlotCoords;
 		weapons.add(weapon);
 		// do something so it attaches to bench
+	}
+
+	public function mergePossible()
+	{
+		var basicUnits:Array<String> = [];
+		var advancedUnits:Array<String> = [];
+		for (unit in allied_units)
+		{
+			var unit = cast(unit, Unit);
+			switch UnitData.unitToRarity[unit.unitID]
+			{
+				case "basic":
+					basicUnits.push(unit.unitName);
+				case "advanced":
+					advancedUnits.push(unit.unitName);
+			}
+		}
+
+		var adv_map:Map<String, Int> = new Map<String, Int>();
+		for (adv in advancedUnits)
+		{
+			if (adv_map.get(adv) == null)
+			{
+				adv_map[adv] = 0;
+			}
+			adv_map[adv] += 1;
+			if (adv_map[adv] >= 3)
+			{
+				return {unit1: adv, unit2: null, type: "master"};
+			}
+		}
+
+		if (basicUnits.length >= 2)
+		{
+			return {unit1: basicUnits[0], unit2: basicUnits[1], type: "basic"};
+		}
+		return null;
 	}
 
 	public function removeWeapon(weapon:Weapon)
@@ -282,8 +376,72 @@ class PlayerState
 			{
 				closest_info = slot2_info;
 			}
+			if (current_stage >= 3 || Main.DEV_ENABLED)
+			{
+				var slot1_info = advMergeSlot1.closest_grid_slot(unit.x, unit.y);
+				var slot2_info = advMergeSlot2.closest_grid_slot(unit.x, unit.y);
+				var slot3_info = advMergeSlot3.closest_grid_slot(unit.x, unit.y);
+				if (slot1_info.dist < closest_info.dist)
+				{
+					closest_info = slot1_info;
+				}
+				if (slot2_info.dist < closest_info.dist)
+				{
+					closest_info = slot2_info;
+				}
+				if (slot3_info.dist < closest_info.dist)
+				{
+					closest_info = slot3_info;
+				}
+			}
 		}
 
 		return closest_info;
+	}
+
+	function getMultiplier()
+	{
+		// version A
+		if (this.versionPlayed == 0)
+		{
+			if (livesRemaining == 3)
+			{
+				return 1.0;
+			}
+			else if (livesRemaining == 2)
+			{
+				return 0.9;
+			}
+			else if (livesRemaining == 1)
+			{
+				return 0.8;
+			}
+			return 0.7;
+		}
+		else
+		{
+			if (numberOfLosses <= 5)
+			{
+				return -numberOfLosses * 0.1 + 1;
+			}
+			else
+			{
+				return 0.5;
+			}
+		}
+	}
+
+	public static function hashString(str:String)
+	{
+		var result = 0;
+		var p = 31;
+		var m = 1000000001;
+		var powerOfP = 1;
+		for (i in 0...str.length)
+		{
+			result = (result + (str.charCodeAt(i) - 'a'.charCodeAt(0) + 1) * powerOfP) % m;
+			powerOfP = (powerOfP * p) % m;
+		}
+		return result;
 	}
 }

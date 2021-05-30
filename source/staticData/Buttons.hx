@@ -2,6 +2,7 @@ package staticData;
 
 import flixel.addons.ui.FlxButtonPlus;
 import flixel.text.FlxText;
+import flixel.ui.FlxButton;
 import flixel.util.FlxColor;
 
 class Buttons
@@ -19,6 +20,22 @@ class Buttons
 		button.textHighlight = button.textNormal;
 		button.updateInactiveButtonColors([0x7e89fc00, 0x7e89fc00]);
 		button.updateActiveButtonColors([0xf5718f00, 0xf5718f00]);
+		return button;
+	}
+
+	public static function makeImgButton(x, y, img_name, callback)
+	{
+		var button = new FlxButton(x, y, "", callback);
+		button.loadGraphic("assets/images/buttons/" + img_name + "_up.png");
+		button.onOver.callback = function()
+		{
+			button.loadGraphic("assets/images/buttons/" + img_name + "_down.png");
+		};
+		button.onOut.callback = function()
+		{
+			button.loadGraphic("assets/images/buttons/" + img_name + "_up.png");
+		};
+
 		return button;
 	}
 }

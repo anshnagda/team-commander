@@ -1,3 +1,4 @@
+import flixel.system.FlxSound;
 import flixel.FlxG;
 import flixel.FlxState;
 import flixel.addons.ui.FlxButtonPlus;
@@ -14,11 +15,13 @@ import staticData.*;
 
 class MainState extends FlxState
 {
-	public static inline var MAX_STAGE = 5;
+	public static inline var MAX_STAGE = 4;
 
 	var playButton:FlxButtonPlus;
 	var playerState:PlayerState;
 	var rand:FlxRandom;
+	var sound:FlxSound;
+	var time:Float;
 
 	var started:Bool = false;
 
@@ -32,14 +35,16 @@ class MainState extends FlxState
 		FlxG.plugins.add(new FlxMouseEventManager());
 		this.rand = new FlxRandom();
 		playerState = new PlayerState();
-		playButton = Buttons.makeButton(0, 0, 96, 96, clickPlayLog, "Play Game", 32, FlxColor.WHITE, FlxTextAlign.CENTER, true);
-		// playButton = new FlxButtonPlus(0, 0, clickPlay, "Play Game", 96, 96);
-		// playButton.borderColor = FlxColor.BLACK;
-		// playButton.textNormal = Font.makeText(0, 25, 96, "Play Game", 32, FlxColor.WHITE, FlxTextAlign.CENTER);
-		// playButton.textHighlight = Font.makeText(0, 25, 96, "Play Game", 32, FlxColor.WHITE, FlxTextAlign.CENTER);
-
-		// playButton.screenCenter();
+		playButton = Buttons.makeButton(0, 0, 150, 96, clickPlayLog, "Play Game", 32, FlxColor.WHITE, FlxTextAlign.CENTER, true);
 		add(playButton);
+
+		add(Font.makeText(0, 50, 800, "TEAM COMMANDER", 128));
+
+		// Initialize sound
+		sound = playerState.sound;
+		time = 0;
+		
+
 		if (Main.DEV_ENABLED)
 		{
 			clickPlay(true);
@@ -65,6 +70,7 @@ class MainState extends FlxState
 			playerState.log.logLevelStart(this.playerState.current_level + (this.playerState.current_stage - 1) * 5);
 		}
 		remove(playButton);
+		playMusic("assets/music/BATTLE.wav");
 		FlxG.switchState(new LevelStateTutorial(playerState, endLevelCallback, openShopCallback, openMergeCallback));
 	}
 
@@ -79,27 +85,59 @@ class MainState extends FlxState
 		// if current state is a levelstate, then do the following:
 		if (won)
 		{
+			playerState.numberOfLosses = 0;
+			if (playerState.current_stage == MAX_STAGE && playerState.current_level == 5)
+			{
+				// end game, game cleared
+				FlxG.switchState(new EndGameState("You cleared the game!"));
+				return;
+			}
 			FlxG.switchState(new RewardState(playerState, endRewardCallBack));
 			// toggle reward screen
 		}
 		else
 		{
-			FlxG.switchState(new LevelState(playerState, endLevelCallback, openShopCallback, openMergeCallback));
+			if (playerState.versionPlayed == 0) {
+				playerState.livesRemaining -= 1;
+			}
+			playerState.numberOfLosses++;
+			if (playerState.livesRemaining < 0 && !Main.DEV_ENABLED)
+			{
+				FlxG.switchState(new EndGameState("Game Over (all 3 lives lost)"));
+			}
+			else
+			{
+				FlxG.switchState(new LoseState(newGameCallback, retryLevelCallback, playerState));
+			}
 		}
+	}
+
+	function newGameCallback()
+	{
+		FlxG.switchState(new MainState());
+	}
+
+	function retryLevelCallback()
+	{
+		playMusic("assets/music/BATTLE.wav");
+		FlxG.switchState(new LevelState(playerState, endLevelCallback, openShopCallback, openMergeCallback));
 	}
 
 	function closeShopOrMergeCallback(result:Bool, state:BenchAndInventoryState)
 	{
+		playMusic("assets/music/BATTLE.wav");
 		FlxG.switchState(new LevelState(playerState, endLevelCallback, openShopCallback, openMergeCallback));
 	}
 
 	function openShopCallback()
 	{
+		playMusic("assets/music/SHOP.wav");
 		FlxG.switchState(new ShopState(playerState, closeShopOrMergeCallback, openMergeCallback));
 	}
 
 	function openMergeCallback()
 	{
+		playMusic("assets/music/MERGE.wav");
 		FlxG.switchState(new MergeState(playerState, closeShopOrMergeCallback, openShopCallback));
 	}
 
@@ -108,13 +146,14 @@ class MainState extends FlxState
 		// after reward, hands back to level_state
 		var currStage = this.playerState.current_stage;
 		var currLevel = this.playerState.current_level;
-		if (currStage == 2 && currLevel == 5)
-		{
-			FlxG.switchState(new EndGameState("END OF DEMO!"));
-			return;
-		}
+		// if (currStage == 2 && currLevel == 5)
+		// {
+		// 	FlxG.switchState(new EndGameState("END OF DEMO!"));
+		// 	return;
+		// }
 		if (currStage == 1 && currLevel == 4 || currStage > 1 && currStage < MAX_STAGE && currLevel == 5)
 		{
+			this.playerState.livesRemaining = 3;
 			this.playerState.changeLevel(currStage + 1, 1);
 		}
 		else if (currStage == MAX_STAGE && currLevel == 5)
@@ -127,13 +166,13 @@ class MainState extends FlxState
 		{
 			this.playerState.changeLevel(currStage, currLevel + 1);
 		}
+		playerState.unitInShop = null;
+		playerState.unitPriceInShop = null;
+		playerState.rerollCost = 0;
 		if (!Main.DEV_ENABLED)
 		{
 			playerState.log.logLevelStart(this.playerState.current_level + (this.playerState.current_stage - 1) * 5);
 		}
-		playerState.unitInShop = null;
-		playerState.unitPriceInShop = null;
-		playerState.rerollCost = 0;
 		if (playerState.current_stage == 1)
 		{
 			FlxG.switchState(new LevelStateTutorial(playerState, endLevelCallback, openShopCallback, openMergeCallback));
@@ -142,9 +181,28 @@ class MainState extends FlxState
 		{
 			FlxG.switchState(new LevelStateTutorial(playerState, endLevelCallback, openShopCallback, openMergeCallback));
 		}
+		else if (playerState.current_stage == 3 && playerState.current_level == 1)
+		{
+			FlxG.switchState(new LevelStateTutorial(playerState, endLevelCallback, openShopCallback, openMergeCallback));
+		}
 		else
 		{
 			FlxG.switchState(new LevelState(playerState, endLevelCallback, openShopCallback, openMergeCallback));
 		}
+	}
+
+	override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+		time = sound.time;
+		trace(time);
+	}
+
+	function playMusic(path:String) {
+		var volume = sound.volume;
+		sound.loadEmbedded(path, true);
+		sound.volume = volume;
+		sound.persist = true;
+		sound.play(false, time);
 	}
 }

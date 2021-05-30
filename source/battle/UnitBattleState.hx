@@ -8,7 +8,23 @@ class UnitBattleState {
     public var coor:Point;
     public var numAttDone:Int;
     public var buff:Map<Stats, Int>;  // maps current buff ID to number of turns left
-    public var firstRound = true;
+    public var dodges = 0;
+    public var firstTimeDie = true;
+    public var turnCompleted = 0;
+
+    public var bomb = false;
+
+    public var mugenCap = 0;
+    public var sor = false;
+
+    public var freeze = 0;
+
+    public var invinsible = false;
+    public var invinsibleTurn = 0;
+    public var isClone = false;
+
+    public var weapon1:Int = -1;
+    public var weapon2:Int = -1;
 
     public function new(currCoor:Point, unit:Unit) {
         this.coor = currCoor;
@@ -23,9 +39,13 @@ class UnitBattleState {
 
     public function attacked() {
         this.numAttDone++;
+        this.invinsibleTurn--;
+        if (invinsibleTurn == 0) {
+            this.invinsible = false;
+        }
         for (b in buff.keys()) {
             buff[b]--;
-            if (buff[b] == 0) {
+            if (buff[b] >= 0) {
                 removeBuff(b);
             }
         }

@@ -1,10 +1,10 @@
 package battle;
 
-import flixel.math.FlxRandom;
 import attachingMechanism.Snappable;
 import entities.*;
 import flixel.FlxBasic;
 import flixel.FlxSprite;
+import flixel.math.FlxRandom;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxTimer;
 import grids.BattleGrid;
@@ -13,6 +13,8 @@ import haxe.Timer;
 import haxe.ds.ListSort;
 import haxe.ds.Vector;
 import js.html.Console;
+import js.html.svg.UnitTypes;
+import staticData.UnitData;
 
 // a static class that does battle calculation
 // it simulates and moves the units as well
@@ -20,6 +22,9 @@ class BattleCalculator extends FlxSprite
 {
 	var frieNo:Int;
 	var eneNo:Int;
+	var eneBM:Int = 0;
+	var fire_elem:Int = 0;
+	var frieBM:Int = 0;
 
 	var unitList:List<Unit>;
 	var dead:Array<Unit>;
@@ -56,6 +61,44 @@ class BattleCalculator extends FlxSprite
 		this.dead = new Array<Unit>();
 	}
 
+	public function addEneU(unit:Unit)
+	{
+		this.eneU.push(unit);
+		this.unitList.add(unit);
+		eneNo++;
+	}
+
+	public function removeEneU(unit:Unit)
+	{
+		if (eneU.remove(unit))
+		{
+			eneNo--;
+			unitList.remove(unit);
+			unitStates.remove(unit);
+			return true;
+		}
+		return false;
+	}
+
+	public function addFrieU(unit:Unit)
+	{
+		this.frieU.push(unit);
+		this.unitList.add(unit);
+		frieNo++;
+	}
+
+	public function removeFrieU(unit:Unit)
+	{
+		if (frieU.remove(unit))
+		{
+			frieNo--;
+			unitList.remove(unit);
+			unitStates.remove(unit);
+			return true;
+		}
+		return false;
+	}
+
 	// find all units in the grid and put it into 2 arrays
 	// one enemy array and one ally array
 	private function findUnits(battleGrid:BattleGrid)
@@ -71,10 +114,22 @@ class BattleCalculator extends FlxSprite
 					if (unit.enemy)
 					{
 						eneU.push(unit);
+						if (unit.unitID == 20)
+						{
+							eneBM++;
+						}
+						if (unit.unitID == 35)
+						{
+							this.fire_elem++;
+						}
 					}
 					else
 					{
 						frieU.push(unit);
+						if (unit.unitID == 20)
+						{
+							frieBM++;
+						}
 					}
 				}
 			}
@@ -95,19 +150,59 @@ class BattleCalculator extends FlxSprite
 		// if within range attack
 		// move ability
 
-		var moved = false;
-		if (unitStates.get(unit).firstRound)
+		if (unitStates[unit].freeze > 0)
 		{
-			if (unitStates.get(unit).unit.enemy)
+			unitStates[unit].freeze--;
+			unitList.add(unit);
+			unitStates[unit].turnCompleted++;
+			Timer.delay(onComplete, battleGrid.RANDOM_DELAY);
+			return;
+		}
+
+		var moved = false;
+		if (unitStates.get(unit).unit.enemy)
+		{
+			moved = Effect.moveWithAbilities(unitStates.get(unit), this.battleGrid, unitStates, frieU);
+		}
+		else
+		{
+			moved = Effect.moveWithAbilities(unitStates.get(unit), this.battleGrid, unitStates, eneU);
+		}
+
+		if (unitStates.get(unit).unit.unitID == 22 && unitStates.get(unit).turnCompleted == 0 && !unitStates.get(unit).isClone)
+		{ // summon shogun
+			// find target
+			var target = new Point(unitStates.get(unit).getCoor().x, 7 - unitStates.get(unit).getCoor().y);
+			var i = 0;
+			while (battleGrid.unitGrid[target.x][target.y] != null)
 			{
-				moved = Effect.moveWithAbilities(unitStates.get(unit), this.battleGrid, unitStates, frieU);
+				var placeable = findReachablePlace(board, target, i, false);
+				placeable.shift();
+				if (placeable.length > 0)
+				{
+					target = placeable.shift();
+					break;
+				}
+				i++;
+			}
+			var clone = battleGrid.summon_shogun(unit, target);
+			unitList.push(clone);
+			unitStates[clone] = new UnitBattleState(target, clone);
+			unitStates[clone].isClone = true;
+			unitStates[clone].weapon1 = unitStates[unit].weapon1;
+			unitStates[clone].weapon2 = unitStates[unit].weapon2;
+			if (unit.enemy)
+			{
+				eneNo++;
+				eneU.push(clone);
 			}
 			else
 			{
-				moved = Effect.moveWithAbilities(unitStates.get(unit), this.battleGrid, unitStates, eneU);
+				frieNo++;
+				frieU.push(clone);
 			}
-			unitStates.get(unit).firstRound = false;
 		}
+
 		var enemy = findNearestEnemy(board, unitStates.get(unit).getCoor(), unit.enemy);
 		var reachable = findReachablePlace(board, unitStates.get(unit).getCoor(), unit.currStats.mv, false);
 		if (!moved
@@ -115,21 +210,33 @@ class BattleCalculator extends FlxSprite
 				|| distance(unitStates.get(unit).getCoor(), enemy) < unit.currStats.minRng))
 		{
 			// move first
-			var qValueGrid = formQValue(unit);
-			trace(qValueGrid);
+			var qValueGrid = formQValue(unit, enemy);
 			var destPt = findBestPtToMove(reachable, qValueGrid);
 			// 1. move the unit to destPt
 			moved = move(unitStates.get(unit).getCoor(), destPt, battleGrid);
 			unitStates[unit].updateCoor(destPt);
 		}
 
+		if (moved)
+		{
+			Timer.delay(() -> applyBuff(unit, enemy), Std.int(battleGrid.MOVE_DURATION * 1000) + battleGrid.RANDOM_DELAY);
+		}
+		else
+		{
+			applyBuff(unit, enemy);
+		}
+	}
+
+	private function applyBuff(unit:Unit, enemy:Point)
+	{
+		var buffed = Effect.buffPhase(unitStates[unit], unitStates, battleGrid, this);
 		// decide if you want to attack
-		if (distance(unitStates.get(unit).getCoor(), enemy) <= unit.currStats.maxRng
+		if (unitStates.get(unit) != null && distance(unitStates.get(unit).getCoor(), enemy) <= unit.currStats.maxRng
 			&& distance(unitStates.get(unit).getCoor(), enemy) >= unit.currStats.minRng)
 		{
-			if (moved)
+			if (buffed)
 			{
-				Timer.delay(() -> attack(enemy, unit), Std.int(BattleGrid.MOVE_DURATION * 1000) + BattleGrid.RANDOM_DELAY);
+				Timer.delay(() -> attack(enemy, unit), Std.int(battleGrid.ATTACK_DURATION * 1000) + battleGrid.RANDOM_DELAY);
 			}
 			else
 			{
@@ -139,8 +246,21 @@ class BattleCalculator extends FlxSprite
 		else
 		{
 			// clean up units that are dead
-			unitList.add(unit);
-			Timer.delay(onComplete, Std.int(BattleGrid.MOVE_DURATION * 1000) + BattleGrid.RANDOM_DELAY);
+			if (frieU.contains(unit) || eneU.contains(unit))
+			{
+				unitList.add(unit);
+			}
+			if (unitStates.get(unit) != null) {
+				unitStates.get(unit).turnCompleted++;
+			}
+			if (buffed)
+			{
+				Timer.delay(onComplete, Std.int(battleGrid.ATTACK_DURATION * 1000) + battleGrid.RANDOM_DELAY);
+			}
+			else
+			{
+				Timer.delay(onComplete, battleGrid.RANDOM_DELAY);
+			}
 		}
 	}
 
@@ -149,12 +269,21 @@ class BattleCalculator extends FlxSprite
 	{
 		// attack !
 		var ene = board[enemy.x][enemy.y];
-		var affected = Effect.attackWithAbilities(0, unitStates.get(unit), unitStates.get(ene), battleGrid, unitStates);
+		var oppoU:Array<Unit>;
+		if (ene.enemy)
+		{
+			oppoU = eneU;
+		}
+		else
+		{
+			oppoU = frieU;
+		}
+		var affected = Effect.attackWithAbilities(0, unitStates.get(unit), unitStates.get(ene), oppoU, battleGrid, unitStates);
 
-		Timer.delay(() -> damageCalcAndAfterAtt(affected, unit, ene), Std.int(BattleGrid.ATTACK_DURATION * 1000));
+		Timer.delay(() -> damageCalcAndAfterAtt(affected, unit, ene), Std.int(battleGrid.ATTACK_DURATION * 1000));
 	}
 
-	private function damageCalcAndAfterAtt(affectedUnits:Map<Unit, Int>, unit:Unit, ene:Unit)
+	private function damageCalcAndAfterAtt(affectedUnits:Map<Unit, BattleDamage>, unit:Unit, ene:Unit)
 	{
 		this.dead = Effect.damageCalc(affectedUnits, this.unitStates, unit, this.battleGrid);
 		if (unit.unitID == 12)
@@ -162,8 +291,15 @@ class BattleCalculator extends FlxSprite
 			this.dead = Effect.damageCalc(affectedUnits, unitStates, unit, this.battleGrid);
 		}
 		this.unitStates.get(unit).attacked();
-		Effect.postAttack(unitStates[unit]);
-		unitList.add(unit);
+		Effect.postAttack(unitStates[unit], this.battleGrid);
+		if (this.dead.length > 0 && unit.unitID == 16)
+		{
+			unitList.push(unit);
+		}
+		else
+		{
+			unitList.add(unit);
+		}
 		if (ene.enemy)
 		{
 			eneNo -= dead.length;
@@ -172,7 +308,8 @@ class BattleCalculator extends FlxSprite
 		{
 			frieNo -= dead.length;
 		}
-		Timer.delay(onComplete, BattleGrid.RANDOM_DELAY);
+		unitStates.get(unit).turnCompleted++;
+		Timer.delay(onComplete, Std.int(battleGrid.MOVE_DURATION * 1000));
 	}
 
 	// return a sorted list of units that has the fastest unit at the front
@@ -208,6 +345,14 @@ class BattleCalculator extends FlxSprite
 				if (curr != null)
 				{
 					res[curr] = new UnitBattleState(new Point(i, j), curr);
+					if (curr.weaponSlot1.isOccupied && res[curr].weapon1 != null)
+					{
+						res[curr].weapon1 = cast(curr.weaponSlot1.attachedSnappable, Weapon).weaponID;
+					}
+					if (curr.weaponSlot2.isOccupied && res[curr].weapon2 != null)
+					{
+						res[curr].weapon2 = cast(curr.weaponSlot2.attachedSnappable, Weapon).weaponID;
+					}
 				}
 				j++;
 			}
@@ -217,7 +362,7 @@ class BattleCalculator extends FlxSprite
 		return res;
 	}
 
-	private static function contains(arr:Array<Point>, p:Point)
+	public static function contains(arr:Array<Point>, p:Point)
 	{
 		for (pt in arr)
 		{
@@ -261,7 +406,6 @@ class BattleCalculator extends FlxSprite
 				}
 			}
 		}
-		trace("Should not reach here " + board[origin.x][origin.y].unitName);
 		return null;
 	}
 
@@ -308,7 +452,7 @@ class BattleCalculator extends FlxSprite
 
 	// a function that, given the current level layout and attacking unit, assigns a value to each empty grid. The closer
 	// to the grids that are within range, the higher the value.
-	private function formQValue(attacker:Unit)
+	private function formQValue(attacker:Unit, enePt:Point)
 	{
 		var enemies:Array<Unit>;
 		if (attacker.enemy)
@@ -336,19 +480,17 @@ class BattleCalculator extends FlxSprite
 		for (enemy in enemies)
 		{
 			// update QValue until it converges
-			var change = updateQValue(unitStates.get(enemy).getCoor(), qValueGrid, attacker);
+			var change = updateQValue(unitStates.get(enemy).getCoor(), qValueGrid, attacker, enePt);
 			while (change != 0)
 			{
-				trace("Not converged yet");
-				trace("Change = " + change);
-				change = updateQValue(unitStates.get(enemy).getCoor(), qValueGrid, attacker);
+				change = updateQValue(unitStates.get(enemy).getCoor(), qValueGrid, attacker, enePt);
 			}
 			// move on to the next enemy
 		}
 		return qValueGrid;
 	}
 
-	private function updateQValue(origin:Point, qValueGrid:Vector<Vector<Int>>, attacker:Unit)
+	private function updateQValue(origin:Point, qValueGrid:Vector<Vector<Int>>, attacker:Unit, enePt:Point)
 	{
 		var visited = new Array<Point>();
 		var next = new Array<Point>();
@@ -375,15 +517,31 @@ class BattleCalculator extends FlxSprite
 			options.push(p3);
 			options.push(p4);
 
-			if (battleGrid.unitGrid[curr.x][curr.y] != null && battleGrid.unitGrid[curr.x][curr.y] != attacker && qValueGrid[curr.x][curr.y] != -1) {
+			if (battleGrid.unitGrid[curr.x][curr.y] != null
+				&& battleGrid.unitGrid[curr.x][curr.y] != attacker
+				&& qValueGrid[curr.x][curr.y] != -1)
+			{
 				// if there is another unit at this place, set it to 0
-				qValueGrid[curr.x][curr.y] = -1; 
-			} else if (distance(curr, origin) >= minRange && distance(curr, origin) <= maxRange && qValueGrid[curr.x][curr.y] != -1) {
-				// if it is within range of attack and does not have a unit
-				qValueGrid[curr.x][curr.y] = 64;
-			} else if (distance(curr, origin) <= minRange && qValueGrid[curr.x][curr.y] != -1) {
 				qValueGrid[curr.x][curr.y] = -1;
-			} else if (qValueGrid[curr.x][curr.y] != -1){ // if it is not within range of attack
+			}
+			else if (distance(curr, origin) >= minRange && distance(curr, origin) <= maxRange && qValueGrid[curr.x][curr.y] != -1)
+			{
+				if (enePt.x == origin.x && enePt.y == origin.y)
+				{
+					qValueGrid[curr.x][curr.y] = 70;
+				}
+				else
+				{
+					// if it is within range of attack and does not have a unit
+					qValueGrid[curr.x][curr.y] = 64;
+				}
+			}
+			else if (distance(curr, origin) <= minRange && qValueGrid[curr.x][curr.y] != -1)
+			{
+				qValueGrid[curr.x][curr.y] = -1;
+			}
+			else if (qValueGrid[curr.x][curr.y] != -1)
+			{ // if it is not within range of attack
 				// set qValue to the max(surrouding points - 1, itself)
 				var max = qValueGrid[curr.x][curr.y];
 				for (pt in options)
@@ -410,7 +568,6 @@ class BattleCalculator extends FlxSprite
 				}
 			}
 		}
-		trace("One iteration done");
 		return maxChange;
 	}
 
@@ -421,14 +578,15 @@ class BattleCalculator extends FlxSprite
 		var best = qValueGrid[reachable[0].x][reachable[0].y];
 		for (pt in reachable)
 		{
-			if (qValueGrid[pt.x][pt.y] > best)
+			if (qValueGrid[pt.x][pt.y] >= best)
 			{
 				best = qValueGrid[pt.x][pt.y];
 				option = pt;
 			}
 		}
 
-		if (best == qValueGrid[reachable[0].x][reachable[0].y]) {
+		if (best == qValueGrid[reachable[0].x][reachable[0].y])
+		{
 			var rand = new FlxRandom();
 			option = reachable[rand.int(0, reachable.length - 1)];
 		}
@@ -462,7 +620,39 @@ class BattleCalculator extends FlxSprite
 			unitList.remove(toBeKilled);
 			var pt = unitStates[toBeKilled].getCoor();
 			battleGrid.killUnit(pt.x, pt.y);
-			unitStates.remove(toBeKilled);
+			if (toBeKilled.unitID != 37) {
+				unitStates.remove(toBeKilled);
+			}
+			if (toBeKilled.enemy)
+			{
+				if (toBeKilled.unitID == 20)
+				{
+					eneBM--;
+				}
+			}
+			else
+			{
+				if (toBeKilled.unitID == 20)
+				{
+					frieBM--;
+				}
+			}
+			if ((toBeKilled.enemy && eneBM > 0 || !toBeKilled.enemy && frieBM > 0) && toBeKilled.unitID != UnitData.unitIDs.get("zombie"))
+			{
+				var zombie = battleGrid.summon_zombie(toBeKilled.enemy, Std.int(toBeKilled.currStats.atk / 4), Std.int(toBeKilled.maxHp / 4), pt);
+				unitList.add(zombie);
+				unitStates[zombie] = new UnitBattleState(pt, zombie);
+				if (toBeKilled.enemy)
+				{
+					eneU.push(zombie);
+					eneNo++;
+				}
+				else
+				{
+					frieU.push(zombie);
+					frieNo++;
+				}
+			}
 			if (toBeKilled.enemy)
 			{
 				eneU.remove(toBeKilled);
@@ -472,7 +662,7 @@ class BattleCalculator extends FlxSprite
 				frieU.remove(toBeKilled);
 			}
 		}
-		Effect.deathBuffs(dead, unitStates, battleGrid);
+		Effect.deathBuffs(dead, unitStates, battleGrid, this);
 		dead.splice(0, dead.length);
 		// decide if the game has ended
 		if (this.frieNo == 0 || this.eneNo == 0)
@@ -485,7 +675,7 @@ class BattleCalculator extends FlxSprite
 		}
 		else
 		{
-			Timer.delay(oneIter, BattleGrid.RANDOM_DELAY);
+			Timer.delay(oneIter, battleGrid.RANDOM_DELAY);
 		}
 	}
 }

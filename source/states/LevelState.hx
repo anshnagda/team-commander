@@ -2,6 +2,7 @@ package states;
 
 import battle.BattleCalculator;
 import entities.Unit;
+import entities.Weapon;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
@@ -36,6 +37,7 @@ class LevelState extends BenchAndInventoryState
 {
 	var enemyLayout:Array<EnemyPosition>;
 	var enemyUnits:FlxGroup = new FlxGroup();
+	var enemyWeapons:FlxGroup = new FlxGroup();
 
 	var background:FlxSprite;
 
@@ -58,7 +60,15 @@ class LevelState extends BenchAndInventoryState
 		super(playerState, endLevelCallback);
 		this.stage = playerState.current_stage;
 		this.level = playerState.current_level;
-		this.enemyLayout = LevelLayouts.createEnemySetup(stage, level);
+		if (Main.DEV_ENABLED)
+		{
+			var rand = new FlxRandom();
+			this.enemyLayout = LevelLayouts.createEnemySetup(stage, level, Std.string(rand.int()));
+		}
+		else
+		{
+			this.enemyLayout = LevelLayouts.createEnemySetup(stage, level, playerState.log.currentSessionId);
+		}
 
 		this.playerState.battle_grid.reset_battle();
 		this.playerState.battle_grid.updateTextSprite();
@@ -86,12 +96,15 @@ class LevelState extends BenchAndInventoryState
 		// add unit capacity text
 		add(playerState.numUnitsTextSprite);
 		// add enemies
+		add(enemyUnits);
+
 		for (pos in enemyLayout)
 		{
 			if (stage == 1)
 			{
 				pos.enemy.enemyStatMultiplier = 0.7;
 			}
+			pos.enemy.enemyStatMultiplier *= playerState.getMultiplier();
 			pos.enemy.makeEnemy();
 			enemyUnits.add(pos.enemy);
 			pos.enemy.reset(pos.enemy.x, pos.enemy.y);
@@ -107,14 +120,39 @@ class LevelState extends BenchAndInventoryState
 				this.removeHover(pos.enemy.hover);
 			}
 			FlxMouseEventManager.add(pos.enemy, pos.enemy.mouseDown, pos.enemy.mouseUp, pos.enemy.mouseOver, pos.enemy.mouseOut);
+
+			if (pos.enemy.weaponSlot1.isOccupied)
+			{
+				var weap = cast(pos.enemy.weaponSlot1.attachedSnappable, Weapon);
+				enemyWeapons.add(weap);
+				weap.showHover = function()
+				{
+					this.addHover(weap.hover);
+				}
+				weap.hideHover = function()
+				{
+					this.removeHover(weap.hover);
+				}
+				FlxMouseEventManager.add(weap, weap.mouseDown, weap.mouseUp, weap.mouseOver, weap.mouseOut);
+			}
+			if (pos.enemy.weaponSlot2.isOccupied)
+			{
+				var weap = cast(pos.enemy.weaponSlot2.attachedSnappable, Weapon);
+				enemyWeapons.add(weap);
+				weap.showHover = function()
+				{
+					this.addHover(weap.hover);
+				}
+				weap.hideHover = function()
+				{
+					this.removeHover(weap.hover);
+				}
+				FlxMouseEventManager.add(weap, weap.mouseDown, weap.mouseUp, weap.mouseOver, weap.mouseOut);
+			}
 		}
+		add(playerState.battle_grid.summoned_units);
 
-		add(enemyUnits);
-		// super.create() gets all allied weapons and units and draws bench and inventory
-		super.create();
-
-		// add all the enemies
-		// TODO
+		add(enemyWeapons);
 
 		// add the buttons
 
@@ -127,6 +165,17 @@ class LevelState extends BenchAndInventoryState
 		{
 			add(merge_button);
 		}
+
+		if ((!playerState.firstTimeLose || Main.DEV_ENABLED) && playerState.versionPlayed == 0)
+		{
+			add(Font.makeText(playerState.inventory.x, 530, 48 * 3, "Lives: " + playerState.livesRemaining + "/3", 32));
+		}
+		if (Main.DEV_ENABLED || playerState.current_stage >= 2)
+		{
+			add(Font.makeText(playerState.inventory.x, 560, 48 * 3, "Gold:  " + playerState.gold, 32));
+		}
+		// super.create() gets all allied weapons and units and draws bench and inventory
+		super.create();
 
 		currentLevelText = Font.makeText(playerState.inventory.x, 10, playerState.inventory.gridSize * playerState.inventory.numRows,
 			"LEVEL "
@@ -224,6 +273,7 @@ class LevelState extends BenchAndInventoryState
 		remove(background);
 		remove(playerState.battle_grid.projectiles);
 		remove(playerState.battle_grid.square_effects);
+		remove(playerState.battle_grid.summoned_units);
 		remove(battle_button);
 		remove(merge_button);
 		remove(shop_button);

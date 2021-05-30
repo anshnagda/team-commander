@@ -38,7 +38,7 @@ class Card extends SnappableInfo
 		super(x - Std.int(SnappableInfo.IMAGE_WIDTH / 2), y - Std.int(SnappableInfo.IMAGE_WIDTH / 2), snappable);
 		// createRectangularBody(IMAGE_WIDTH, IMAGE_HEIGHT);
 		snappable.x = this.x + Std.int((SnappableInfo.IMAGE_WIDTH - snappable.width) / 2);
-		snappable.y = this.y - SnappableInfo.PADDING_UP;
+		snappable.y = this.y - SnappableInfo.PADDING_UP - 16;
 		snappable.disable();
 
 		rand = new FlxRandom();
@@ -96,7 +96,7 @@ class Card extends SnappableInfo
 	override function update(elapsed:Float)
 	{
 		snappable.x = this.x + Std.int((SnappableInfo.IMAGE_WIDTH - snappable.width) / 2);
-		snappable.y = this.y - SnappableInfo.PADDING_UP;
+		snappable.y = this.y - SnappableInfo.PADDING_UP - 16;
 		super.update(elapsed);
 	}
 

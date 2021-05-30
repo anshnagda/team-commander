@@ -13,7 +13,7 @@ class TutorialBox extends FlxSpriteGroup
 	var click_text_sprite:FlxText;
 
 	// All the tutorial boxes are 200x150
-	public function new(text:String, x:Int, y:Int, graphics_location:String)
+	public function new(text:String, x:Int, y:Int, graphics_location:String, toShowAdvance:Bool = true)
 	{
 		super();
 		if (graphics_location == "assets/images/leftbox.png")
@@ -38,6 +38,9 @@ class TutorialBox extends FlxSpriteGroup
 		}
 		add(img_sprite);
 		add(text_sprite);
-		add(click_text_sprite);
+		if (toShowAdvance)
+		{
+			add(click_text_sprite);
+		}
 	}
 }

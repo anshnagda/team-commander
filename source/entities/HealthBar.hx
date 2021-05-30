@@ -1,9 +1,10 @@
 package entities;
 
 import flixel.FlxG;
-import flixel.util.FlxColor;
-import flixel.group.FlxSpriteGroup;
 import flixel.FlxSprite;
+import flixel.group.FlxSpriteGroup;
+import flixel.util.FlxColor;
+
 using flixel.util.FlxSpriteUtil;
 
 class HealthBar extends FlxSpriteGroup
@@ -13,10 +14,12 @@ class HealthBar extends FlxSpriteGroup
     var min:Int = 0;
     var max:Int = 100;
     public var currHP:Int;
+    public var shield:Int;
 
     // Sprite info
 	var baseBar:FlxSprite;
 	var currBar:FlxSprite;
+    var shieldBar:FlxSprite;
     var border:FlxSprite;
     var thickness:Int = 3;
 
@@ -43,13 +46,16 @@ class HealthBar extends FlxSpriteGroup
         // Draw bar sprites
         baseBar = new FlxSprite(x, y);
         currBar = new FlxSprite(x, y);
+        shieldBar = new FlxSprite(x, y);
         border = new FlxSprite();
 		border.makeGraphic(FlxG.width, FlxG.height, FlxColor.TRANSPARENT, true);
         add(baseBar);
         add(currBar);
+		add(shieldBar);
         add(border);
         baseBar.makeGraphic(barWidth, barHeight, FlxColor.RED);
         currBar.makeGraphic(barWidth, barHeight, FlxColor.GREEN);
+        //shieldBar.makeGraphic(barWidth, barHeight, FlxColor.WHITE);
         // Draw border
 		var lineStyle:LineStyle = {color: FlxColor.BLACK, thickness: this.thickness};
         border.drawRect(x, y, width, height, FlxColor.TRANSPARENT,lineStyle);
@@ -68,20 +74,43 @@ class HealthBar extends FlxSpriteGroup
         // If currHP has changed redraw the curr health bar graphic
         if (currHP <= 0) {
             currBar.kill();
-        } else if (Math.round((currWidth / barWidth) * 100) != percent) 
-        {
-            currBar.makeGraphic(Math.round(barWidth * (percent / 100)), barHeight, FlxColor.GREEN);
         }
+        if (Math.round((currWidth / barWidth) * 100) != percent) 
+        {
+			currWidth = Math.round(barWidth * (percent / 100));
+            currBar.makeGraphic(currWidth, barHeight, FlxColor.GREEN);
+        }
+
+        
+        // Handle shield graphic
+        var shieldPercent:Int;
+        shieldPercent = Math.round((shield / max) * 100);
+        if (shield <= 0) {
+            shieldBar.makeGraphic(1, barHeight, FlxColor.WHITE);
+        } else {
+
+			shieldBar.makeGraphic(Math.round(barWidth * (Math.min(shieldPercent, 100) / 100)), barHeight, FlxColor.WHITE);
+        }
+
         x = parent.x + xOffset;
         y = parent.y + yOffset;
 
 		super.update(elapsed);
 	}
 
+	public static function round(number:Float, ?precision = 2):Float
+	{
+		number *= Math.pow(10, precision);
+		return Math.round(number) / Math.pow(10, precision);
+	}
+
+
 	override function reset(x:Float, y:Float):Void
 	{
         super.reset(x, y);
         currHP = max;
+		baseBar.makeGraphic(barWidth, barHeight, FlxColor.RED);
 		currBar.makeGraphic(barWidth, barHeight, FlxColor.GREEN);
+		//shieldBar.makeGraphic(barWidth, barHeight, FlxColor.WHITE);
     }
 }

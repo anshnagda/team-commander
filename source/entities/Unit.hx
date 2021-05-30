@@ -62,7 +62,6 @@ class Unit extends Snappable
 		this.clicked_graphics = function() {};
 		this.unitName = UnitData.unitNames[unitID];
 		loadGraphic(UnitData.unitIDToSpritePath(unitID));
-		trace(UnitData.unitIDToSpritePath(unitID));
 		setGraphicSize(48, 48);
 		original_image = pixels.clone();
 		this.pixels = UnitData.allyOutlineEffect(this.pixels);
@@ -79,7 +78,7 @@ class Unit extends Snappable
 		}
 		else if (UnitData.unitToRarity[unitID] == "master")
 		{
-			price.text = Std.string(Std.int(ShopState.PRICE[1] / 2));
+			price.text = Std.string(Std.int(ShopState.PRICE[2] / 2));
 		}
 
 		// Initialize weapon slots
@@ -180,7 +179,16 @@ class Unit extends Snappable
 	// Used to lower the hp of the unit
 	public function takeDamage(hp:Int)
 	{
-		lowerStats(Math.round(Math.max(0, hp)), 0, 0, 0, 0);
+		hp = Std.int(Math.max(hp, 0));
+		var shield = this.currStats.shield;
+		this.currStats.shield = Std.int(Math.max(shield - hp, 0));
+		hp = Std.int(Math.max(0, hp - shield));
+		lowerStats(hp, 0, 0, 0, 0);
+	}
+
+	public function addShield(amt:Int)
+	{
+		this.currStats.shield += amt;
 	}
 
 	// Heals a unit up to at most full
@@ -270,7 +278,6 @@ class Unit extends Snappable
 	// called when this snappable was hovered over. Used to display stats about this snappable.
 	override function mouseOver(object:FlxSprite)
 	{
-		trace("mouse over");
 		isBeingHovered = true;
 		// showHover(this.hover);
 	}
@@ -287,6 +294,7 @@ class Unit extends Snappable
 		super.update(elapsed);
 
 		this.healthBar.currHP = currStats.hp;
+		this.healthBar.shield = currStats.shield;
 		healthBar.setRange(0, maxHp);
 
 		if (isBeingHovered && !clicked && !hoverShown)
@@ -307,7 +315,7 @@ class Unit extends Snappable
 		}
 		else
 		{
-			this.hover.x = Math.min(this.x + 48 + 20 + 48 * this.currStats.maxRng, 528);
+			this.hover.x = Math.min(this.x + 48 + 20 + 48 * Math.max(0, this.currStats.maxRng), 528);
 		}
 		if (this.y + 48 + SnappableInfo.IMAGE_HEIGHT / 2 > 600 - 20)
 		{
@@ -339,6 +347,10 @@ class Unit extends Snappable
 		}
 
 		healthBar.kill();
+		if (hideHover != null)
+		{
+			hideHover();
+		}
 	}
 
 	public function updateStats()
@@ -354,7 +366,7 @@ class Unit extends Snappable
 		body = body + "Health: " + currStats.hp + "/" + maxHp + "\n";
 		body = body + "Attack: " + currStats.atk + "\n";
 		body = body + "Moves: " + currStats.mv + "\n";
-		if (currStats.minRng == 1)
+		if (currStats.minRng <= 1)
 		{
 			body = body + "Range: " + currStats.maxRng + "\n";
 		}
@@ -362,6 +374,7 @@ class Unit extends Snappable
 		{
 			body = body + "Range: " + currStats.minRng + "-" + currStats.maxRng + "\n";
 		}
+		body = body + "Speed: " + currStats.spd + "\n";
 		var abilities = UnitData.unitIdToAbility(unitID, this);
 		if (abilities.length > 0)
 		{

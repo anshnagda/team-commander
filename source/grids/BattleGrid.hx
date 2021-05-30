@@ -1,9 +1,11 @@
 package grids;
 
 import attachingMechanism.Snappable;
+import battle.BattleDamage;
 import battle.Point;
 import battle.UnitBattleState;
 import entities.*;
+import flixel.FlxBasic;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup;
@@ -26,10 +28,17 @@ import staticData.UnitData;
 class BattleGrid extends SlotGrid
 {
 	// animation durations
-	public static inline var ATTACK_DURATION = 0.2;
-	public static inline var MOVE_DURATION = 0.2;
-	public static inline var KILL_DURATION = 0.0;
-	public static inline var RANDOM_DELAY = 100;
+	public static inline var ATTACK_DURATION_BASE = 0.2;
+	public static inline var MOVE_DURATION_BASE = 0.2;
+	public static inline var KILL_DURATION_BASE = 0.0;
+	public static inline var RANDOM_DELAY_BASE = 150;
+
+	public var ATTACK_DURATION = ATTACK_DURATION_BASE;
+	public var MOVE_DURATION = MOVE_DURATION_BASE;
+	public var KILL_DURATION = KILL_DURATION_BASE;
+	public var RANDOM_DELAY = RANDOM_DELAY_BASE;
+
+	public var animation_speed:Float = 1.0;
 
 	var is_drawn = false;
 
@@ -48,13 +57,25 @@ class BattleGrid extends SlotGrid
 	// number of units currently on the board
 	var numUnits:Int = 0;
 
+	var numBattlingUnits:Int = 0;
+
 	// sprites for attack projectiles and other non-unit, non-weapon entities
 	var projectiles:FlxGroup = new FlxGroup();
 	var square_effects:FlxGroup = new FlxGroup();
+	var summoned_units:FlxGroup = new FlxGroup();
 	var arrow:FlxSprite;
 	var fireball:FlxSprite;
 
 	var currently_drawn_square:{row:Int, col:Int};
+
+	function setSpeed(mult:Float)
+	{
+		animation_speed = mult;
+		ATTACK_DURATION = ATTACK_DURATION_BASE / mult;
+		MOVE_DURATION = MOVE_DURATION_BASE / mult;
+		KILL_DURATION = KILL_DURATION_BASE / mult;
+		RANDOM_DELAY = Std.int(RANDOM_DELAY_BASE / mult);
+	}
 
 	public function new(gridSize:Int, x:Int, y:Int, disableEverything:Function, graphicsSource:String, playerState:PlayerState)
 	{
@@ -69,8 +90,6 @@ class BattleGrid extends SlotGrid
 				this.numUnits += 1;
 				this.updateTextSprite();
 			}
-
-			// update range indicator for
 		}
 
 		// all the slots in this battlegrid will update this.numUnits after being detached
@@ -154,6 +173,7 @@ class BattleGrid extends SlotGrid
 		arrow.kill();
 		redrawColors();
 		battleStarted = true;
+		numBattlingUnits = numUnits;
 		for (i in 0...numRows)
 		{
 			for (j in 0...numCols)
@@ -265,11 +285,6 @@ class BattleGrid extends SlotGrid
 	function meleeAttack(row1:Int, col1:Int, row2:Int, col2:Int)
 	{
 		var unit = unitGrid[row1][col1];
-		var init_coords = square_coords(row1, col1);
-		var end_coords = square_coords(row2, col2);
-
-		var vect = {x: end_coords.x - init_coords.x, y: end_coords.y - init_coords.y};
-		end_coords = {x: init_coords.x + Std.int(vect.x * 0.5), y: init_coords.y + Std.int(vect.y * 0.5)};
 
 		FlxTween.tween(unit, square_coords(row2, col2), ATTACK_DURATION / 2, {
 			onComplete: function(tween:FlxTween)
@@ -278,6 +293,159 @@ class BattleGrid extends SlotGrid
 			}
 		});
 	}
+
+	function doubleAttack(row1:Int, col1:Int, row2:Int, col2:Int)
+	{
+		var unit = unitGrid[row1][col1];
+		var start_coords = square_coords(row1, col1);
+		var end_coords = square_coords(row2, col2);
+		var mid_coords = {x: 0.1 * start_coords.x + 0.9 * end_coords.x, y: 0.1 * start_coords.y + 0.9 * end_coords.y};
+
+		FlxTween.tween(unit, end_coords, ATTACK_DURATION / 3, {
+			onComplete: function(tween:FlxTween)
+			{
+				FlxTween.tween(unit, mid_coords, ATTACK_DURATION / 6, {
+					onComplete: function(tween:FlxTween)
+					{
+						FlxTween.tween(unit, end_coords, ATTACK_DURATION / 6, {
+							onComplete: function(tween:FlxTween)
+							{
+								FlxTween.tween(unit, square_coords(row1, col1), ATTACK_DURATION / 3);
+							}
+						});
+					}
+				});
+			}
+		});
+	}
+
+	private function summon_unit(summoned_unit:Unit, location:Point)
+	{
+		if (unitGrid[location.x][location.y] != null)
+		{
+			return null;
+		}
+		summoned_unit.enableBattleSprites();
+		summoned_unit.detach();
+		summoned_unit.disable();
+		var coordinates = this.square_coords(location.x, location.y);
+		summoned_unit.x = coordinates.x;
+		summoned_unit.y = coordinates.y;
+		summoned_unit.alpha = 0;
+
+		summoned_units.add(summoned_unit);
+		summoned_units.add(summoned_unit.healthBar);
+		unitGrid[location.x][location.y] = summoned_unit;
+
+		FlxTween.tween(summoned_unit, {alpha: 1.0}, 0.15);
+		return summoned_unit;
+	}
+
+	public function summon_zombie(isEnemy:Bool, atk:Int, hp:Int, location:Point)
+	{
+		var zombie = new Unit(0, 0, UnitData.unitIDs.get("zombie"), null);
+		if (isEnemy)
+		{
+			zombie.enemyStatMultiplier = playerState.getMultiplier();
+			zombie.makeEnemy();
+		}
+		zombie.baseStats.atk = atk;
+		zombie.baseStats.hp = hp;
+		zombie.updateStats();
+
+		return summon_unit(zombie, location);
+	}
+
+	public function summon_shogun(shogun_to_copy:Unit, location:Point)
+	{
+		var new_shogun = new Unit(0, 0, UnitData.unitIDs.get("shogun"), null);
+		if (shogun_to_copy.enemy)
+		{
+			new_shogun.enemyStatMultiplier = playerState.getMultiplier();
+			new_shogun.makeEnemy();
+		}
+		if (shogun_to_copy.weaponSlot1.isOccupied)
+		{
+			var weapon1 = new Weapon(0, 0, cast(shogun_to_copy.weaponSlot1.attachedSnappable, Weapon).weaponID, null);
+			weapon1.attach(new_shogun.weaponSlot1);
+		}
+		if (shogun_to_copy.weaponSlot2.isOccupied)
+		{
+			var weapon2 = new Weapon(0, 0, cast(shogun_to_copy.weaponSlot2.attachedSnappable, Weapon).weaponID, null);
+			weapon2.attach(new_shogun.weaponSlot2);
+		}
+		new_shogun.updateStats();
+		return summon_unit(new_shogun, location);
+	}
+
+	public function summon_exalted_copy(health:Int, location:Point)
+	{
+		var new_exalted = new Unit(0, 0, UnitData.unitIDs.get("the exalted one"), null);
+		new_exalted.baseStats.hp = health;
+		new_exalted.updateStats();
+		new_exalted.makeEnemy();
+
+		return summon_unit(new_exalted, location);
+	}
+
+	public function summon_queen(location:Point)
+	{
+		var queen = new Unit(0, 0, UnitData.unitIDs.get("queen"), null);
+		queen.enemyStatMultiplier = playerState.getMultiplier();
+		queen.makeEnemy();
+		return summon_unit(queen, location);
+	}
+
+	public function summon_alien(location:Point)
+	{
+		var alien = new Unit(0, 0, UnitData.unitIDs.get("alien"), null);
+		alien.enemyStatMultiplier = playerState.getMultiplier();
+		alien.makeEnemy();
+		return summon_unit(alien, location);
+	}
+
+	public function summon_withering(location:Point)
+	{
+		var alien = new Unit(0, 0, UnitData.unitIDs.get("withering soul"), null);
+		alien.enemyStatMultiplier = playerState.getMultiplier();
+		alien.makeEnemy();
+		return summon_unit(alien, location);
+	}
+
+	public function summon_exalted(location:Point)
+	{
+		var alien = new Unit(0, 0, UnitData.unitIDs.get("the exalted one"), null);
+		alien.enemyStatMultiplier = playerState.getMultiplier();
+		alien.makeEnemy();
+		return summon_unit(alien, location);
+	}
+
+	// public function summon(unitID:Int, locations:Array<Point>, isEnemy:Bool)
+	// {
+	// 	for (location in locations)
+	// 	{
+	// 		if (unitGrid[location.x][location.y] == null)
+	// 		{
+	// 			trace("REACHED HERE");
+	// 			var summoned_unit = new Unit(0, 0, unitID, null);
+	// 			if (isEnemy)
+	// 			{
+	// 				summoned_unit.makeEnemy();
+	// 			}
+	// 			summoned_unit.enableBattleSprites();
+	// 			summoned_unit.detach();
+	// 			summoned_unit.disable();
+	// 			var coordinates = this.square_coords(location.x, location.y);
+	// 			summoned_unit.x = coordinates.x;
+	// 			summoned_unit.y = coordinates.y;
+	// 			summoned_unit.alpha = 0;
+	// 			summoned_units.add(summoned_unit);
+	// 			summoned_units.add(summoned_unit.healthBar);
+	// 			unitGrid[location.x][location.y] = summoned_unit;
+	// 			FlxTween.tween(summoned_unit, {alpha: 1.0}, 0.15);
+	// 		}
+	// 	}
+	// }
 
 	public function heal(locations:Array<Point>)
 	{
@@ -289,15 +457,119 @@ class BattleGrid extends SlotGrid
 			var coords = square_coords(location.x, location.y);
 			heal_sprite.x = coords.x;
 			heal_sprite.y = coords.y;
-			square_effects.add(heal_sprite);
-			Timer.delay(() -> square_effects.remove(heal_sprite), Std.int(ATTACK_DURATION * 1000));
+			projectiles.add(heal_sprite);
+			Timer.delay(() -> projectiles.remove(heal_sprite), Std.int(ATTACK_DURATION * 1000));
 		}
 	}
 
-	public function buff(location:Point) {}
+	public function buff(locations:Array<Point>)
+	{
+		for (location in locations)
+		{
+			var heal_sprite = new FlxSprite();
+			heal_sprite.loadGraphic("assets/images/projectiles/buff_sq.png");
+			heal_sprite.alpha = 0.7;
+			var coords = square_coords(location.x, location.y);
+			heal_sprite.x = coords.x;
+			heal_sprite.y = coords.y;
+			projectiles.add(heal_sprite);
+			Timer.delay(() -> projectiles.remove(heal_sprite), Std.int(ATTACK_DURATION * 1000));
+		}
+	}
+
+	public function warlock_attack(location:Point)
+	{
+		var x = location.x;
+		var y = location.y;
+		var aoe_lst = [
+			{x: x, y: y},
+			{x: x - 1, y: y},
+			{x: x + 1, y: y},
+			{x: x, y: y + 1},
+			{x: x, y: y - 1}
+		];
+		for (loc in aoe_lst)
+		{
+			if (0 <= loc.x && 0 <= loc.y && loc.x < 8 && loc.y < 8)
+			{
+				var aoe_sprite = new FlxSprite();
+				aoe_sprite.loadGraphic("assets/images/projectiles/flame.png");
+				var coords = square_coords(loc.x, loc.y);
+				aoe_sprite.x = coords.x;
+				aoe_sprite.y = coords.y;
+				square_effects.add(aoe_sprite);
+				Timer.delay(() -> square_effects.remove(aoe_sprite), Std.int(ATTACK_DURATION * 1000));
+			}
+		}
+	}
+
+	public function archmage_attack(location:Point)
+	{
+		for (x in location.x - 1...location.x + 2)
+		{
+			for (y in location.y - 1...location.y + 2)
+			{
+				if (0 <= x && 0 <= y && x < 8 && y < 8)
+				{
+					var aoe_sprite = new FlxSprite();
+					aoe_sprite.loadGraphic("assets/images/projectiles/flame.png");
+					var coords = square_coords(x, y);
+					aoe_sprite.x = coords.x;
+					aoe_sprite.y = coords.y;
+					square_effects.add(aoe_sprite);
+					Timer.delay(() -> square_effects.remove(aoe_sprite), Std.int(ATTACK_DURATION * 1000));
+				}
+			}
+		}
+	}
+
+	function mothershipAttack(attacker:Point, victim:Point)
+	{
+		var beam = new FlxSprite();
+		beam.loadGraphic("assets/images/projectiles/beam.png");
+		var init_coords = square_coords(attacker.x, attacker.y);
+		var end_coords = square_coords(victim.x, victim.y);
+		beam.reset(init_coords.x, init_coords.y);
+		projectiles.add(beam);
+		var angle = FlxAngle.angleBetweenPoint(beam, new FlxPoint(end_coords.x, end_coords.y), true) + 80;
+		beam.angle = angle;
+
+		FlxTween.tween(beam, end_coords, ATTACK_DURATION, {
+			onComplete: function(tween:FlxTween)
+			{
+				projectiles.remove(beam);
+				beam.kill();
+			}
+		});
+	}
+
+	function thunderAttack(attacker:Point, affectedUnits:Map<Unit, BattleDamage>)
+	{
+		var init_coords = square_coords(attacker.x, attacker.y);
+
+		for (unit in affectedUnits.keys())
+		{
+			var beam = new FlxSprite();
+			beam.loadGraphic("assets/images/projectiles/lightening.png");
+			var init_coords = square_coords(attacker.x, attacker.y);
+			var end_coords = {x: unit.x, y: unit.y};
+			beam.reset(init_coords.x, init_coords.y);
+			projectiles.add(beam);
+			var angle = FlxAngle.angleBetweenPoint(beam, new FlxPoint(end_coords.x, end_coords.y), true) + 90;
+			beam.angle = angle;
+
+			FlxTween.tween(beam, end_coords, ATTACK_DURATION, {
+				onComplete: function(tween:FlxTween)
+				{
+					projectiles.remove(beam);
+					beam.kill();
+				}
+			});
+		}
+	}
 
 	// the unit at attacker does an attack to the victim.
-	public function attack(attacker:Point, victim:Point, attacker_battlestate:UnitBattleState, affectedUnits:Map<Unit, Int>)
+	public function attack(attacker:Point, victim:Point, attacker_battlestate:UnitBattleState, affectedUnits:Map<Unit, BattleDamage>)
 	{
 		var unitA = unitGrid[attacker.x][attacker.y];
 		var unitB = unitGrid[victim.x][victim.y];
@@ -305,9 +577,17 @@ class BattleGrid extends SlotGrid
 		{
 			return false;
 		}
-		if (unitA.unitName == "all-seeing eye")
+		if (unitA.unitName == "all-seeing eye" || unitA.unitName == "overlord")
 		{
 			eyeAttack();
+		}
+		else if (unitA.unitName == "thunder spirit")
+		{
+			thunderAttack(attacker, affectedUnits);
+		}
+		else if (unitA.unitName == "mothership" || unitA.unitName == "alien")
+		{
+			mothershipAttack(attacker, victim);
 		}
 		else if (UnitData.unitToRanged[unitA.unitID])
 		{
@@ -318,6 +598,14 @@ class BattleGrid extends SlotGrid
 			else if (UnitData.magicUnits.contains(unitA.unitName))
 			{
 				rangedAttack(attacker.x, attacker.y, victim.x, victim.y, fireball);
+				if (unitA.unitName == "warlock")
+				{
+					Timer.delay(() -> warlock_attack(victim), Std.int(ATTACK_DURATION * 500));
+				}
+				if (unitA.unitName == "archmage")
+				{
+					Timer.delay(() -> archmage_attack(victim), Std.int(ATTACK_DURATION * 500));
+				}
 			}
 			else
 			{
@@ -326,7 +614,14 @@ class BattleGrid extends SlotGrid
 		}
 		else
 		{
-			meleeAttack(attacker.x, attacker.y, victim.x, victim.y);
+			if (unitA.unitName == "samurai" || unitA.unitName == "shogun")
+			{
+				doubleAttack(attacker.x, attacker.y, victim.x, victim.y);
+			}
+			else
+			{
+				meleeAttack(attacker.x, attacker.y, victim.x, victim.y);
+			}
 		}
 		for (unit in affectedUnits.keys())
 		{
@@ -375,7 +670,11 @@ class BattleGrid extends SlotGrid
 	function reset_battle()
 	{
 		updateTextSprite();
+		projectiles.clear();
+		projectiles.add(arrow);
+		projectiles.add(fireball);
 		arrow.kill();
+		fireball.kill();
 		numUnits = 0;
 		battleStarted = false;
 		for (i in 0...numRows)
@@ -388,6 +687,11 @@ class BattleGrid extends SlotGrid
 				}
 			}
 		}
+		summoned_units.forEach(function(unit:FlxBasic)
+		{
+			unit.kill();
+		});
+
 		for (unit in playerState.allied_units)
 		{
 			var allied_unit = cast(unit, Unit);
@@ -463,6 +767,11 @@ class BattleGrid extends SlotGrid
 							sprites_arr[i][j].color = 0x041095;
 						}
 					}
+				}
+
+				if (unit.unitName == "shogun" && !battleStarted)
+				{
+					sprites_arr[coords.row][7 - coords.col].color = 0xC0C0C0;
 				}
 			}
 		}

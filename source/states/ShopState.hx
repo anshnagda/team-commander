@@ -26,7 +26,7 @@ class ShopState extends BenchAndInventoryState
 	public static inline var SHOP_X = 50 + 48;
 	public static inline var SHOP_Y = 30;
 	public static inline var SHOP_SIZE = 8 * 48;
-	public static var PRICE = [100, 300, 800];
+	public static var PRICE = [100, 225, 700];
 
 	public static var SELL_BOARD_X = SHOP_X;
 	public static var SELL_BOARD_Y = 380;
@@ -58,7 +58,7 @@ class ShopState extends BenchAndInventoryState
 	{
 		super(playerState, backToLevel);
 
-		rerollOptions = [10, 25, 50, 100, 200, 500];
+		rerollOptions = [10, 25, 50, 100, 200, 400];
 		purchased = new Array<Unit>();
 		playerState.inShope = true;
 		playerState.sellSlot.attachCallback = sell;
@@ -127,17 +127,20 @@ class ShopState extends BenchAndInventoryState
 			case 1:
 				t1 = 100;
 			case 2:
-				t1 = 100;
-			case 3:
 				t1 = 90;
 				t2 = 10;
-			case 4:
-				t1 = 80;
-				t2 = 20;
-			case 5:
-				t1 = 70;
+			case 3:
+				t1 = 75;
 				t2 = 25;
-				t3 = 5;
+				t3 = 0;
+			case 4:
+				t1 = 60;
+				t2 = 30;
+				t3 = 10;
+			case 5:
+				t1 = 50;
+				t2 = 35;
+				t3 = 15;
 		}
 		for (i in 0...3)
 		{
@@ -196,16 +199,15 @@ class ShopState extends BenchAndInventoryState
 		playerGold = Font.makeText(40, 20, 300, "GOLD: " + playerState.gold, 32, FlxColor.fromInt(0xFFD700), FlxTextAlign.LEFT);
 		add(playerGold);
 
-		this.rerollBtn = new FlxButtonPlus(415, 400, reroll, "Reroll", 96, 48);
-		rerollBtn.borderColor = FlxColor.BLACK;
-		rerollBtn.textNormal = Font.makeText(415, 415, 96, "Reroll", 16, FlxColor.WHITE);
+		this.rerollBtn = Buttons.makeButton(415, 400, 96, 48, reroll, "Reroll", 16);
+		rerollBtn.textNormal = Font.makeText(415, 407, 96, "Reroll\n(" + rerollOptions[playerState.rerollCost] + " Gold)", 16, FlxColor.WHITE);
 		rerollBtn.textHighlight = Font.makeText(415, 415, 96, rerollOptions[playerState.rerollCost] + " Gold", 16, FlxColor.WHITE);
 		add(rerollBtn);
 
 		displayProduct();
 		super.create();
 
-		if (this.playerState.firstTimeShop)
+		if (this.playerState.firstTimeShop && PlayerState.tutorial)
 		{
 			this.playerState.firstTimeShop = false;
 			this.tutorial_boxes = [
@@ -269,10 +271,21 @@ class ShopState extends BenchAndInventoryState
 
 	private function buildProductFromID()
 	{
+		playerState.unitPriceInShop = new Array<FlxText>();
 		for (i in 0...this.playerState.unitInShop.length)
 		{
 			this.currentInShop.push(new UnitCard(SHOP_X + 10 + i * (10 + SnappableInfo.IMAGE_WIDTH), SHOP_Y + 50 + SnappableInfo.IMAGE_HEIGHT / 2, 0, 0, 0,
 				bought, true, this.playerState.unitInShop[i]));
+
+			var price = PRICE[currentInShop[i].getUnit().rarity];
+			playerState.unitPriceInShop.push(Font.makeText(SHOP_X
+				+ 10
+				+ i * (10 + SnappableInfo.IMAGE_WIDTH)
+				- SnappableInfo.IMAGE_WIDTH / 2,
+				SHOP_Y
+				+ 70
+				+ SnappableInfo.IMAGE_HEIGHT, SnappableInfo.IMAGE_WIDTH, price
+				+ " Gold", 32));
 		}
 	}
 
@@ -284,7 +297,6 @@ class ShopState extends BenchAndInventoryState
 		for (i in 0...currentInShop.length)
 		{
 			var card = currentInShop[i];
-			trace(card);
 			if (card == null)
 			{
 				continue;
@@ -295,9 +307,26 @@ class ShopState extends BenchAndInventoryState
 				{ // check if there's enough money
 					// cannot buy
 					card.selected = false;
+					card.clickable = true;
 					this.color = card.color;
 					card.color = FlxColor.RED;
 					Timer.delay(convertBack, 2000);
+					var notice = new TutorialBox("Not enough money.", 300, 225, "assets/images/box.png");
+					add(notice);
+					Timer.delay(() -> remove(notice), 2000);
+					continue;
+				}
+
+				if (playerState.allied_units.length >= 10)
+				{
+					card.selected = false;
+					card.clickable = true;
+					this.color = card.color;
+					card.color = FlxColor.RED;
+					Timer.delay(convertBack, 2000);
+					var notice = new TutorialBox("Your bench is full. Try again after you sell a unit.", 300, 225, "assets/images/box.png");
+					add(notice);
+					Timer.delay(() -> remove(notice), 2000);
 					continue;
 				}
 
@@ -365,7 +394,8 @@ class ShopState extends BenchAndInventoryState
 			{
 				playerState.rerollCost++;
 			}
-			rerollBtn.textHighlight = Font.makeText(415, 415, 96, rerollOptions[playerState.rerollCost] + " Gold", 16, FlxColor.WHITE);
+			rerollBtn.textNormal = Font.makeText(415, 407, 96, "Reroll (" + rerollOptions[playerState.rerollCost] + " Gold)", 16, FlxColor.WHITE);
+			rerollBtn.textHighlight = Font.makeText(415, 407, 96, "Reroll (" + rerollOptions[playerState.rerollCost] + " Gold)", 16, FlxColor.WHITE);
 
 			// remove all cards on screen
 			for (i in 0...currentInShop.length)
@@ -396,7 +426,7 @@ class ShopState extends BenchAndInventoryState
 	// change button texts back
 	private function convertBack()
 	{
-		rerollBtn.textNormal = Font.makeText(415, 415, 96, "Reroll", 16, FlxColor.WHITE);
+		rerollBtn.textNormal = Font.makeText(415, 407, 96, "Reroll (" + rerollOptions[playerState.rerollCost] + " Gold)", 16, FlxColor.WHITE);
 		rerollBtn.textHighlight = Font.makeText(415, 415, 96, rerollOptions[playerState.rerollCost] + " Gold", 16, FlxColor.WHITE);
 		for (card in currentInShop)
 		{
@@ -417,6 +447,7 @@ class ShopState extends BenchAndInventoryState
 			remove(unit);
 			remove(unit.healthBar);
 			remove(unit.hover);
+			remove(unit.price);
 			unit.disable();
 
 			playerState.addGold(Std.int(PRICE[unit.rarity] / 2));

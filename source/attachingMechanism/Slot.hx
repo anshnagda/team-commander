@@ -48,6 +48,10 @@ class Slot
 	// a Snappable should call this function passing itself as the argument when it wants to attach to this Slot.
 	function attachTo(obj:Snappable)
 	{
+		if (obj == null)
+		{
+			return false;
+		}
 		if (!isOccupied)
 		{
 			isOccupied = true;

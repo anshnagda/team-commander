@@ -35,48 +35,61 @@ class LevelStateTutorial extends LevelState
 	public function new(playerState:PlayerState, endLevelCallback:Function, openShopCallback:Function, openMergeCallback:Function)
 	{
 		super(playerState, endLevelCallback, openShopCallback, openMergeCallback);
-		tutorial_boxes = new Array<TutorialBox>();
-		big_box = new FlxSprite(0, 0);
-		big_box.makeGraphic(800, 600, FlxColor.BLACK);
-		big_box.alpha = 0.3;
+		if (PlayerState.tutorial)
+		{
+			tutorial_boxes = new Array<TutorialBox>();
+			big_box = new FlxSprite(0, 0);
+			big_box.makeGraphic(800, 600, FlxColor.BLACK);
+			big_box.alpha = 0.3;
+		}
 	}
 
 	override public function create()
 	{
 		super.create();
-
-		if (stage == 1)
+		if (PlayerState.tutorial)
 		{
-			if (level == 1)
+			if (stage == 1)
 			{
-				s1l1_create();
+				if (level == 1)
+				{
+					s1l1_create();
+				}
+				if (level == 2)
+				{
+					s1l2_create();
+				}
+				if (level == 3)
+				{
+					s1l3_create();
+				}
+				if (level == 4)
+				{
+					s1l4_create();
+				}
 			}
-			if (level == 2)
+
+			if (stage == 2)
 			{
-				s1l2_create();
+				if (level == 1)
+				{
+					s2l1_create();
+				}
 			}
-			if (level == 3)
+
+			if (stage == 3)
 			{
-				s1l3_create();
+				if (level == 1)
+				{
+					s3l1_create();
+				}
 			}
-			if (level == 4)
-			{
-				s1l4_create();
-			}
+
+			add(big_box);
+			FlxMouseEventManager.add(big_box, onClickTutorial, null, null, null);
+
+			add(tutorial_boxes[0]);
 		}
-
-		if (stage == 2)
-		{
-			if (level == 1)
-			{
-				s2l1_create();
-			}
-		}
-
-		add(big_box);
-		FlxMouseEventManager.add(big_box, onClickTutorial, null, null, null);
-
-		add(tutorial_boxes[0]);
 	}
 
 	function onClickTutorial(spr:FlxSprite):Void
@@ -91,6 +104,14 @@ class LevelStateTutorial extends LevelState
 		{
 			remove(big_box);
 			FlxMouseEventManager.remove(big_box);
+			if (stage == 1 && level == 4)
+			{
+				open_merge();
+			}
+			else if (stage == 2 && level == 1)
+			{
+				open_shop();
+			}
 		}
 	}
 
@@ -135,6 +156,17 @@ class LevelStateTutorial extends LevelState
 	{
 		tutorial_boxes = [
 			new TutorialBox("You now have access to the shop!", 400, 435, "assets/images/rightbox.png")
+		];
+	}
+
+	function s3l1_create()
+	{
+		tutorial_boxes = [
+			new TutorialBox("You have unlocked the next rarity of units - master units!", 300, 300, "assets/images/box.png"),
+			new TutorialBox("In order to obtain one, you must merge together three identical advanced units.", 300, 300, "assets/images/box.png"),
+			new TutorialBox("Once you collect three advanced units of the same type, head into the merge tool to combine them!", 400, 385,
+				"assets/images/rightbox.png"),
+			new TutorialBox("Remember: you can hover over the enemy's units to see their stats and special abilities.", 200, 0, "assets/images/leftbox.png"),
 		];
 	}
 

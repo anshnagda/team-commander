@@ -74,6 +74,23 @@ class SlotGrid extends FlxSpriteGroup
 		return {x: x + row * gridSize, y: y + col * gridSize};
 	}
 
+	function count_nonempty()
+	{
+		var ret = 0;
+		for (i in 0...numRows)
+		{
+			for (j in 0...numCols)
+			{
+				if (slots[i][j].isOccupied)
+				{
+					ret += 1;
+				}
+			}
+		}
+
+		return ret;
+	}
+
 	function square_coords_point(row:Int, col:Int)
 	{
 		var coord = square_coords(row, col);
