@@ -111,8 +111,8 @@ class PlayerState
 			// allied_units.add(unit);
 
 			gold = 999999999;
-			current_stage = 4;
-			current_level = 2;
+			current_stage = 5;
+			current_level = 5;
 			// var unit = new Unit(20, 20, UnitData.unitIDs.get("warrior"), closestUnitSlotCoords); // change it so he is attached to bench
 			// allied_units.add(unit);
 

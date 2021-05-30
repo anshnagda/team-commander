@@ -1,9 +1,9 @@
-import flixel.system.FlxSound;
 import flixel.FlxG;
 import flixel.FlxState;
 import flixel.addons.ui.FlxButtonPlus;
 import flixel.input.mouse.FlxMouseEventManager;
 import flixel.math.FlxRandom;
+import flixel.system.FlxSound;
 import flixel.text.FlxText;
 import flixel.ui.FlxButton;
 import flixel.util.FlxColor;
@@ -15,7 +15,7 @@ import staticData.*;
 
 class MainState extends FlxState
 {
-	public static inline var MAX_STAGE = 4;
+	public static inline var MAX_STAGE = 6;
 
 	var playButton:FlxButtonPlus;
 	var playerState:PlayerState;
@@ -43,12 +43,15 @@ class MainState extends FlxState
 		// Initialize sound
 		sound = playerState.sound;
 		time = 0;
-		
 
-		//if (Main.DEV_ENABLED)
-		//{
+		if (Main.DEV_ENABLED)
+		{
 			clickPlay(true);
-		//}
+		}
+		else
+		{
+			clickPlayLog();
+		}
 	}
 
 	function clickPlayLog()
@@ -97,7 +100,8 @@ class MainState extends FlxState
 		}
 		else
 		{
-			if (playerState.versionPlayed == 0) {
+			if (playerState.versionPlayed == 0)
+			{
 				playerState.livesRemaining -= 1;
 			}
 			playerState.numberOfLosses++;
@@ -198,7 +202,8 @@ class MainState extends FlxState
 		trace(time);
 	}
 
-	function playMusic(path:String) {
+	function playMusic(path:String)
+	{
 		var volume = sound.volume;
 		sound.loadEmbedded(path, true);
 		sound.volume = volume;

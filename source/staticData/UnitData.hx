@@ -237,13 +237,13 @@ class UnitData
 					+ ")"];
 			case "enforcer":
 				return [
-					"50% chance to dodge an attack. Heal 100 HP on dodge",
+					"50% chance to dodge an attack. Heal 100 hp on dodge",
 					"Knock back enemies 2 spaces on attack"
 				];
 			case "shogun":
 				return [
 					"I Strike twice when I attack",
-					"At the start of battle, create an exact clone of myself on a nearby square"
+					"At the start of battle, create an exact clone of myself on a nearby square. The clone has half my attack and hp"
 				];
 			case "valkyrie":
 				return [
@@ -261,7 +261,9 @@ class UnitData
 			case "mothership":
 				return ["Every 2 turns, summons one alien around Mothership"];
 			case "pawn":
-				return ["Only moves forward. Once Pawn reaches the last row, transform it into a Queen"];
+				return [
+					"Only moves forward. Once Pawn reaches the last row, transform it into a Queen with 500 hp and 225 attack"
+				];
 			case "king":
 				return ["King takes damage for all Pawns within 2 spaces of it"];
 			case "thunder spirit":
