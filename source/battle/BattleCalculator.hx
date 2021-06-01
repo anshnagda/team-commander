@@ -59,6 +59,7 @@ class BattleCalculator extends FlxSprite
 		this.call = callBack;
 
 		this.dead = new Array<Unit>();
+		Effect.startOfBattle(unitStates);
 	}
 
 	public function addEneU(unit:Unit)
@@ -286,7 +287,7 @@ class BattleCalculator extends FlxSprite
 	private function damageCalcAndAfterAtt(affectedUnits:Map<Unit, BattleDamage>, unit:Unit, ene:Unit)
 	{
 		this.dead = Effect.damageCalc(affectedUnits, this.unitStates, unit, this.battleGrid);
-		if (unit.unitID == 12)
+		if (unit.unitID == 12 || unit.unitID == 22)
 		{ // samurai attack twice
 			this.dead = Effect.damageCalc(affectedUnits, unitStates, unit, this.battleGrid);
 		}

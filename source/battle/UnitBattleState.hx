@@ -45,8 +45,9 @@ class UnitBattleState {
         }
         for (b in buff.keys()) {
             buff[b]--;
-            if (buff[b] >= 0) {
+            if (buff[b] <= 0) {
                 removeBuff(b);
+				buff.remove(b);
             }
         }
     }

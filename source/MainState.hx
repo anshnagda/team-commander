@@ -15,7 +15,7 @@ import staticData.*;
 
 class MainState extends FlxState
 {
-	public static inline var MAX_STAGE = 6;
+	public static inline var MAX_STAGE = 5;
 
 	var playButton:FlxButtonPlus;
 	var playerState:PlayerState;
@@ -118,6 +118,7 @@ class MainState extends FlxState
 
 	function newGameCallback()
 	{
+		sound.stop();
 		FlxG.switchState(new MainState());
 	}
 

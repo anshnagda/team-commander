@@ -105,7 +105,7 @@ class UnitData
 			case "slayer":
 				return new Stats(275, 100, 1, 2, 2, 2);
 			case "ranger":
-				return new Stats(200, 150, 2, 3, 2, 3, 33);
+				return new Stats(200, 150, 2, 3, 2, 3, 50);
 			case "samurai":
 				return new Stats(250, 75, 1, 1, 2, 3);
 			case "duelist":
@@ -125,7 +125,7 @@ class UnitData
 			case "bloodmancer":
 				return new Stats(350, 150, 1, 2, 2, 3);
 			case "enforcer":
-				return new Stats(300, 200, 2, 3, 2, 4, 50, 0, 0, 2);
+				return new Stats(300, 200, 2, 3, 2, 4, 100, 0, 0, 2);
 			case "shogun":
 				return new Stats(300, 100, 1, 1, 3, 3);
 			case "valkyrie":
@@ -135,13 +135,13 @@ class UnitData
 			case "slime":
 				return new Stats(30, 5, 1, 1, 1, 1);
 			case "champion":
-				return new Stats(2000, 100, 1, 1, 3, 1);
+				return new Stats(1800, 100, 1, 1, 3, 1);
 			case "mothership":
-				return new Stats(2500, 200, 1, 5, 1, 1);
+				return new Stats(2250, 200, 1, 5, 1, 1);
 			case "alien":
-				return new Stats(200, 125, 1, 3, 1, 6);
+				return new Stats(200, 120, 1, 3, 1, 6);
 			case "thunder spirit":
-				return new Stats(5000, 300, 0, 99, 0, 99, 0, 0, 0, 2);
+				return new Stats(5000, 350, 0, 99, 0, 99, 0, 0, 0, 2);
 			case "pawn":
 				return new Stats(150, 0, 0, 0, 0, 1);
 			case "king":
@@ -149,15 +149,15 @@ class UnitData
 			case "queen":
 				return new Stats(500, 225, 1, 1, 20, 10);
 			case "ashen lord":
-				return new Stats(4000, 250, 1, 99, 0, 1, 50);
+				return new Stats(3500, 250, 1, 99, 0, 1, 100);
 			case "fire elemental":
 				return new Stats(500, 50, 1, 5, 0, 0);
 			case "joker":
 				return new Stats(1250, 225, 1, 2, 3, 3);
 			case "overlord":
-				return new Stats(4000, 250, 0, 99, 0, 5);
+				return new Stats(3000, 250, 0, 99, 0, 5);
 			case "withering soul":
-				return new Stats(1000, 150, 1, 1, 10, 10);
+				return new Stats(750, 150, 1, 1, 10, 10);
 			case "the exalted one":
 				return new Stats(7500, 350, 1, 4, 3, 25);
 			case _:

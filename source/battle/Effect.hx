@@ -12,6 +12,22 @@ import staticData.WeaponData;
 // Static function call
 class Effect
 {
+	// abilities to be called at the start of battle
+	public static function startOfBattle(unitStates:Map<Unit, UnitBattleState>) {
+		for (unit in unitStates.keys()) {
+			if (unitStates[unit].weapon1 == WeaponData.weaponIDs.get("bone ward") || unitStates[unit].weapon2 == WeaponData.weaponIDs.get("bone ward"))
+			{  // bone ward skill
+				for (tar in unitStates.keys())
+				{
+					if (tar.enemy == unit.enemy)
+					{
+						tar.addShield(250);
+					}
+				}
+			}
+		}
+	}
+
 	public static function attackWithAbilities(effID:Int, attacker:UnitBattleState, victim:UnitBattleState, eneU:Array<Unit>, grid:BattleGrid,
 			unitStates:Map<Unit, UnitBattleState>)
 	{
@@ -173,7 +189,7 @@ class Effect
 				if (!unitStates[unit].sor)
 				{
 					unitStates[unit].sor = true;
-					unitStates[unit].freeze += 2;
+					unitStates[unit].freeze += 1;
 				}
 			}
 		}
@@ -302,8 +318,7 @@ class Effect
 				}
 
 			case 39: // exalted one, summon copies
-				if (attacker.turnCompleted > 0)
-				{
+				if (attacker.turnCompleted % 3 == 0) {
 					var possiblePlaces = squareEmptyCoors(attacker.getCoor(), 5, 5, grid, 1);
 					for (pt in possiblePlaces)
 					{
@@ -319,18 +334,7 @@ class Effect
 	// apply weapon buff
 	private static function weaponBUFF(attacker:UnitBattleState, weap:Int, unitStates:Map<Unit, UnitBattleState>, grid:BattleGrid)
 	{
-		if (weap == WeaponData.weaponIDs.get("bone ward") && attacker.turnCompleted == 0)
-		{
-			for (unit in unitStates.keys())
-			{
-				if (unit.enemy == attacker.unit.enemy)
-				{
-					unit.addShield(250);
-				}
-			}
-			return true;
-		}
-		else if (weap == WeaponData.weaponIDs.get("exalted staff"))
+		if (weap == WeaponData.weaponIDs.get("exalted staff"))
 		{
 			var affectedAlly = new Map<Unit, BattleDamage>();
 			affectedAlly[attacker.unit] = new BattleDamage();

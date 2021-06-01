@@ -87,6 +87,7 @@ class BattleGrid extends SlotGrid
 			var snap = cast(snap, Unit);
 			if (!snap.enemy)
 			{
+				playerState.log.logLevelAction(21, snap.unitName);
 				this.numUnits += 1;
 				this.updateTextSprite();
 			}
@@ -98,6 +99,7 @@ class BattleGrid extends SlotGrid
 			var snap = cast(snap, Unit);
 			if (!snap.enemy)
 			{
+				playerState.log.logLevelAction(22, snap.unitName);
 				this.numUnits -= 1;
 				this.updateTextSprite();
 			}

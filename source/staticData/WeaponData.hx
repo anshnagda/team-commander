@@ -104,7 +104,7 @@ class WeaponData
 			case "mugen cap":
 				return Stats.WeaponStat(-50, 175, 2, 1, 0);
 			case "sword of ruin":
-				return Stats.WeaponStat(0, 75, -1, 0, -3);
+				return Stats.WeaponStat(50, 75, 1, 0, -1);
 			case "tempest bow":
 				return Stats.WeaponStat(0, 100, 1, 1, 2, 50, 0, 0, 2);
 			case "gun":
@@ -127,7 +127,7 @@ class WeaponData
 			case "mugen cap":
 				return "Debuff enemies on attack causing them to explode when hit twice for 10% of their max health to nearby squares";
 			case "sword of ruin":
-				return "The first time you attack an enemy, prevent it from moving or attacking for 2 turns that battle";
+				return "The first time you attack an enemy, prevent it from moving or attacking for 1 turn that battle";
 			case _:
 				return "";
 		}

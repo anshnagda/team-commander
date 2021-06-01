@@ -93,6 +93,7 @@ class LoggingData
 			version: this.player.versionPlayed,
 			units: this.units,
 			weapons: this.weapons,
+			number_of_losses: this.player.numberOfLosses,
 			won: this.win,
 			friePlacement: this.friePlacement,
 			enePlacement: this.enePlacement,

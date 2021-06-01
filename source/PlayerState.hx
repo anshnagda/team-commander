@@ -140,7 +140,7 @@ class PlayerState
 			// var weapon = new Weapon(0, 0, WeaponData.weaponIDs.get("tower shield"), closestWeaponSlotCoords);
 			// weapons.add(weapon);
 		}
-		log = new CapstoneLogger(202103, "teamcom", "a084a2b104ca9f35a535f65ed467d3c9", 4);
+		log = new CapstoneLogger(202103, "teamcom", "a084a2b104ca9f35a535f65ed467d3c9", 5);
 		userID = log.getSavedUserId();
 		if (userID == null)
 		{

@@ -96,6 +96,8 @@ class LevelStateTutorial extends LevelState
 	{
 		var previous_box = tutorial_boxes.shift();
 		remove(previous_box);
+		playerState.log.logLevelAction(11, tutorial_boxes.length);
+
 		if (tutorial_boxes.length > 0)
 		{
 			add(tutorial_boxes[0]);

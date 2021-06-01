@@ -218,13 +218,19 @@ class LevelState extends BenchAndInventoryState
 		{
 			return;
 		}
+
 		if (playerState.battle_grid.numUnits == 0)
 		{
 			var error_text = Font.makeText(battle_button.x, battle_button.y, battle_button.width, "Place at least one unit on the grid!", 16, FlxColor.RED);
 			add(error_text);
 			Timer.delay(() -> remove(error_text), 1000);
+			playerState.log.logLevelAction(6);
+
 			return;
 		}
+
+		playerState.log.logLevelAction(7);
+
 		remove(battle_button);
 		remove(shop_button);
 		remove(merge_button);
