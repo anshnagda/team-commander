@@ -74,41 +74,41 @@ class WeaponData
 			case "bladed cuffs":
 				return Stats.WeaponStat(-20, 80, 0, 1, 2, 0, 25);
 			case "compound bow":
-				return Stats.WeaponStat(55, 75, -1, -1, 0, 0, 0, 0, 1);
+				return Stats.WeaponStat(50, 70, -1, -1, 0, 0, 0, 0, 1);
 			case "harpoon":
-				return Stats.WeaponStat(25, 60, 1, 0, -1);
+				return Stats.WeaponStat(20, 55, 1, 0, -1);
 			case "plated boots":
-				return Stats.WeaponStat(65, 0, 0, 1, 1, 0, 0, 15);
+				return Stats.WeaponStat(60, 0, 0, 1, 1, 0, 0, 15);
 			case "reinforced armor":
-				return Stats.WeaponStat(150, -30, 0, 0, -2, 0, 0, 25);
+				return Stats.WeaponStat(135, -30, 0, 0, -2, 0, 0, 25);
 			case "silk steps":
 				return Stats.WeaponStat(30, -30, 0, 2, 1, 15);
 			case "spiked flail":
-				return Stats.WeaponStat(70, 30, 1, 0, -1);
+				return Stats.WeaponStat(65, 25, 1, 0, -1);
 			case "tower shield":
-				return Stats.WeaponStat(100, 0, 0, -1, -1, 10, 0, 10);
+				return Stats.WeaponStat(90, 0, 0, -1, -1, 7, 0, 7);
 			case "greataxe":
-				return Stats.WeaponStat(60, 65, 0, 0, 1);
+				return Stats.WeaponStat(55, 60, 0, 0, 1);
 			case "apollo's trail":
-				return Stats.WeaponStat(75, 0, 0, 10, 10, 35);
+				return Stats.WeaponStat(80, 0, 0, 10, 10, 35);
 			case "astral armor":
-				return Stats.WeaponStat(300, -50, 0, 0, -3, 0, 0, 50);
+				return Stats.WeaponStat(250, -50, 0, 0, -3, 0, 0, 50);
 			case "bloodthirster":
-				return Stats.WeaponStat(150, 100, 0, 1, 1, 0, 50);
+				return Stats.WeaponStat(125, 90, 0, 1, 1, 0, 50);
 			case "bone ward":
-				return Stats.WeaponStat(175, 35, -1, 0, -2);
+				return Stats.WeaponStat(150, 35, 0, 0, -2);
 			case "dragonslayer":
-				return Stats.WeaponStat(100, 125, 2, 0, 0, 0, 15);
+				return Stats.WeaponStat(75, 100, 2, 0, 0, 0, 15);
 			case "exalted staff":
-				return Stats.WeaponStat(75, 75, 0, 0, 2, 12, 0, 12);
+				return Stats.WeaponStat(75, 75, 0, 0, 2, 10, 0, 10);
 			case "mugen cap":
-				return Stats.WeaponStat(-50, 175, 2, 1, 0);
+				return Stats.WeaponStat(-50, 125, 2, 1, 0);
 			case "sword of ruin":
 				return Stats.WeaponStat(50, 75, 1, 0, -1);
 			case "tempest bow":
-				return Stats.WeaponStat(0, 100, 1, 1, 2, 50, 0, 0, 2);
+				return Stats.WeaponStat(0, 75, 1, 1, 2, 50, 0, 0, 2);
 			case "gun":
-				return Stats.WeaponStat(0, 150, 5, 0, 3);
+				return Stats.WeaponStat(0, 130, 4, 0, 2);
 			case _:
 				return Stats.WeaponStat(0, 0, 0, 0, 0);
 		}
@@ -119,15 +119,15 @@ class WeaponData
 		switch weaponNames[id]
 		{
 			case "bone ward":
-				return "At the start of battle, grant all allies a 250HP shield";
+				return "At the start of battle, grant all allies a 200HP shield";
 			case "dragonslayer":
 				return "Deal extra damage equal to 10% of the enemies current health";
 			case "exalted staff":
 				return "Each turn, heal all allies 15% of their max HP and grant them 1 move";
 			case "mugen cap":
-				return "Debuff enemies on attack causing them to explode when hit twice for 10% of their max health to nearby squares";
+				return "Debuff enemies on attack causing them to explode when hit twice for 13% of their max health to nearby squares";
 			case "sword of ruin":
-				return "The first time you attack an enemy, prevent it from moving or attacking for 1 turn that battle";
+				return "The first time you attack an enemy, stun it for 1 turn that battle";
 			case _:
 				return "";
 		}

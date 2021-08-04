@@ -102,9 +102,16 @@ class LevelState extends BenchAndInventoryState
 		{
 			if (stage == 1)
 			{
-				pos.enemy.enemyStatMultiplier = 0.7;
+				pos.enemy.enemyLoseStatMultiplier = 0.7 * playerState.getLoseMultiplier();
 			}
-			pos.enemy.enemyStatMultiplier *= playerState.getMultiplier();
+			else
+			{
+				pos.enemy.enemyLoseStatMultiplier = playerState.getLoseMultiplier();
+			}
+			if (stage != 1)
+			{
+				pos.enemy.enemyWinStateMultiplier = playerState.getWinMultiplier();
+			}
 			pos.enemy.makeEnemy();
 			enemyUnits.add(pos.enemy);
 			pos.enemy.reset(pos.enemy.x, pos.enemy.y);
@@ -166,13 +173,13 @@ class LevelState extends BenchAndInventoryState
 			add(merge_button);
 		}
 
-		if ((!playerState.firstTimeLose || Main.DEV_ENABLED) && playerState.versionPlayed == 0)
+		if (playerState.difficulty == 1)
 		{
-			add(Font.makeText(playerState.inventory.x, 530, 48 * 3, "Lives: " + playerState.livesRemaining + "/3", 32));
+			add(Font.makeText(playerState.inventory.x, 535, 48 * 3, "Lives:  " + playerState.livesRemaining + "/3", 32));
 		}
 		if (Main.DEV_ENABLED || playerState.current_stage >= 2)
 		{
-			add(Font.makeText(playerState.inventory.x, 560, 48 * 3, "Gold:  " + playerState.gold, 32));
+			add(Font.makeText(playerState.inventory.x, 565, 48 * 3, "Gold:  " + playerState.gold, 32));
 		}
 		// super.create() gets all allied weapons and units and draws bench and inventory
 		super.create();
@@ -187,6 +194,7 @@ class LevelState extends BenchAndInventoryState
 
 		// add battlegrid projectiles
 		add(playerState.battle_grid.projectiles);
+		add(playerState.battle_grid.summoned_unit_hover);
 	}
 
 	function open_shop()
@@ -224,16 +232,19 @@ class LevelState extends BenchAndInventoryState
 			var error_text = Font.makeText(battle_button.x, battle_button.y, battle_button.width, "Place at least one unit on the grid!", 16, FlxColor.RED);
 			add(error_text);
 			Timer.delay(() -> remove(error_text), 1000);
-			playerState.log.logLevelAction(6);
-
+			if (!Main.DEV_ENABLED)
+			{
+				playerState.log.logLevelAction(6);
+			}
 			return;
 		}
-
-		playerState.log.logLevelAction(7);
-
-		remove(battle_button);
-		remove(shop_button);
-		remove(merge_button);
+		if (!Main.DEV_ENABLED)
+		{
+			playerState.log.logLevelAction(7);
+		}
+		battle_button.kill();
+		shop_button.kill();
+		merge_button.kill();
 		inBattle = true;
 		playerState.battle_grid.startBattle();
 		this.playerState.logData.recordPlacement(playerState.battle_grid.unitGrid);
@@ -280,6 +291,7 @@ class LevelState extends BenchAndInventoryState
 		remove(playerState.battle_grid.projectiles);
 		remove(playerState.battle_grid.square_effects);
 		remove(playerState.battle_grid.summoned_units);
+		remove(playerState.battle_grid.summoned_unit_hover);
 		remove(battle_button);
 		remove(merge_button);
 		remove(shop_button);

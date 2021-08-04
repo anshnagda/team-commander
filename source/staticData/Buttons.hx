@@ -1,5 +1,6 @@
 package staticData;
 
+import flixel.FlxSprite;
 import flixel.addons.ui.FlxButtonPlus;
 import flixel.text.FlxText;
 import flixel.ui.FlxButton;
@@ -17,7 +18,7 @@ class Buttons
 			button.screenCenter();
 		}
 		button.textNormal = Font.makeText(button.x, button.y + Std.int((height - size) / 2), width, text, size, color, align, FlxColor.TRANSPARENT);
-		button.textHighlight = button.textNormal;
+		button.textHighlight = Font.makeText(button.x, button.y + Std.int((height - size) / 2), width, text, size, color, align, FlxColor.TRANSPARENT);
 		button.updateInactiveButtonColors([0x7e89fc00, 0x7e89fc00]);
 		button.updateActiveButtonColors([0xf5718f00, 0xf5718f00]);
 		return button;

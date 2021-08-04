@@ -39,17 +39,24 @@ class UnitBattleState {
 
     public function attacked() {
         this.numAttDone++;
-        this.invinsibleTurn--;
-        if (invinsibleTurn == 0) {
-            this.invinsible = false;
-        }
-        for (b in buff.keys()) {
-            buff[b]--;
-            if (buff[b] <= 0) {
-                removeBuff(b);
+    }
+
+    public function turnFinished() {
+        this.turnCompleted++;
+		this.invinsibleTurn--;
+		if (invinsibleTurn == 0)
+		{
+			this.invinsible = false;
+		}
+		for (b in buff.keys())
+		{
+			buff[b]--;
+			if (buff[b] <= 0)
+			{
+				removeBuff(b);
 				buff.remove(b);
-            }
-        }
+			}
+		}
     }
 
     public function getCoor() {

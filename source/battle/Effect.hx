@@ -13,15 +13,18 @@ import staticData.WeaponData;
 class Effect
 {
 	// abilities to be called at the start of battle
-	public static function startOfBattle(unitStates:Map<Unit, UnitBattleState>) {
-		for (unit in unitStates.keys()) {
-			if (unitStates[unit].weapon1 == WeaponData.weaponIDs.get("bone ward") || unitStates[unit].weapon2 == WeaponData.weaponIDs.get("bone ward"))
-			{  // bone ward skill
+	public static function startOfBattle(unitStates:Map<Unit, UnitBattleState>)
+	{
+		for (unit in unitStates.keys())
+		{
+			if (unitStates[unit].weapon1 == WeaponData.weaponIDs.get("bone ward")
+				|| unitStates[unit].weapon2 == WeaponData.weaponIDs.get("bone ward"))
+			{ // bone ward skill
 				for (tar in unitStates.keys())
 				{
 					if (tar.enemy == unit.enemy)
 					{
-						tar.addShield(250);
+						tar.addShield(200);
 					}
 				}
 			}
@@ -85,7 +88,7 @@ class Effect
 				affectedUnits.remove(victim.unit);
 				if (attacker.turnCompleted % 2 == 0)
 				{
-					aoeRoundTargets(affectedUnits, attacker.getCoor(), 2, Math.round(attacker.unit.currStats.atk / 2), attacker.unit.enemy, grid);
+					aoeRoundTargets(affectedUnits, attacker.getCoor(), 3, Math.round(attacker.unit.currStats.atk / 2), attacker.unit.enemy, grid);
 				}
 				else
 				{
@@ -113,7 +116,7 @@ class Effect
 						// 25% of current health
 						for (tar in currRound.keys())
 						{
-							currRound[tar].trueDamage += Math.round(tar.maxHp * 0.15);
+							currRound[tar].trueDamage += Math.round(tar.maxHp * 0.13);
 							grid.archmage_attack(unitStates[tar].getCoor());
 							if (affectedUnits[tar] == null)
 							{
@@ -176,7 +179,7 @@ class Effect
 				unitStates[unit].mugenCap++;
 				if (unitStates[unit].mugenCap != 0 && unitStates[unit].mugenCap % 2 == 0)
 				{
-					unitsAffected[unit].normDamage += Math.round(unit.maxHp * 0.1);
+					unitsAffected[unit].normDamage += Math.round(unit.maxHp * 0.13);
 					aoeRoundTargets(unitsAffected, unitStates[unit].getCoor(), 1, Math.round(unit.maxHp * 0.1), attacker.unit.enemy, grid);
 					grid.warlock_attack(unitStates[unit].getCoor());
 				}
@@ -235,6 +238,7 @@ class Effect
 			case 19: // Exarch: Every 2 turns heals all allies and me within 2 spaces
 				// Add a 15% of currHP shield
 				aoeHeal(attacker, unitStates, grid, Std.int(attacker.unit.currStats.hp * 0.3), 3);
+
 				// apply shield, need to consult unit designer
 				buffed = true;
 
@@ -318,7 +322,9 @@ class Effect
 				}
 
 			case 39: // exalted one, summon copies
-				if (attacker.turnCompleted % 3 == 0) {
+				trace(attacker.turnCompleted);
+				if ((attacker.turnCompleted + 1) % 3 == 0)
+				{
 					var possiblePlaces = squareEmptyCoors(attacker.getCoor(), 5, 5, grid, 1);
 					for (pt in possiblePlaces)
 					{
@@ -398,7 +404,7 @@ class Effect
 
 			// calculate damage reduction
 			affectedUnits[enemy].normDamage = Math.round(Math.max(0,
-				affectedUnits[enemy].normDamage - Math.round(enemy.currStats.hp * (enemy.currStats.damageReductionMaxHp / 100.0))));
+				affectedUnits[enemy].normDamage - Math.round(enemy.maxHp * (enemy.currStats.damageReductionMaxHp / 100.0))));
 			affectedUnits[enemy].normDamage = Math.round(affectedUnits[enemy].normDamage * (1.0 - enemy.currStats.damageReduction / 100.0));
 
 			if (enemy.currStats.eva > 0)
@@ -698,13 +704,21 @@ class Effect
 				{
 					empty.push(pt);
 				}
-				if (empty.length == max)
-				{
-					return empty;
-				}
 			}
 		}
-		return empty;
+		var rand = new FlxRandom();
+		var result = new Array<Point>();
+		for (i in 0...max)
+		{
+			if (empty.length == 0)
+			{
+				break;
+			}
+			var r = empty[rand.int(0, empty.length - 1)];
+			result.push(r);
+			empty.remove(r);
+		}
+		return result;
 	}
 
 	// find all units affected by a square aoe

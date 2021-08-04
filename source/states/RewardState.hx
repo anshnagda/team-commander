@@ -263,7 +263,7 @@ class RewardState extends FlxState
 				{
 					// weapon cards (100, 0, 0)
 					// fixed Gold + 50
-					populateWeapon(weaponToChoose, 70, 25, 5);
+					populateWeapon(weaponToChoose, 75, 25, 0);
 					populateStaticReward(75);
 				}
 				else if (level == 3)
@@ -271,7 +271,7 @@ class RewardState extends FlxState
 					// random unit fixed card
 					// fixed Gold + 100
 					// weapon cards(100, 0, 0)
-					populateWeapon(weaponToChoose, 0, 85, 15);
+					populateWeapon(weaponToChoose, 0, 80, 20);
 					populateStaticReward(150);
 				}
 				else
@@ -281,14 +281,14 @@ class RewardState extends FlxState
 					// unit capacity++
 					populateStaticReward(250);
 					increaseUnitCap();
-					populateWeapon(weaponToChoose, 0, 0, 100);
+					populateWeapon(weaponToChoose, 0, 20, 80);
 				}
 			case 4: // to be added
 				if (level <= 2 || level == 4)
 				{
 					// weapon cards (100, 0, 0)
 					// fixed Gold + 50
-					populateWeapon(weaponToChoose, 33, 60, 7);
+					populateWeapon(weaponToChoose, 40, 60, 0);
 					populateStaticReward(100);
 				}
 				else if (level == 3)
@@ -306,14 +306,14 @@ class RewardState extends FlxState
 					// unit capacity++
 					populateStaticReward(300);
 					increaseUnitCap();
-					populateWeapon(weaponToChoose, 0, 0, 100);
+					populateWeapon(weaponToChoose, 0, 10, 90);
 				}
 			case 5: // to be added
 				if (level <= 2 || level == 4)
 				{
 					// weapon cards (100, 0, 0)
 					// fixed Gold + 50
-					populateWeapon(weaponToChoose, 0, 85, 15);
+					populateWeapon(weaponToChoose, 15, 85, 0);
 					populateStaticReward(150);
 				}
 				else if (level == 3)
@@ -322,16 +322,23 @@ class RewardState extends FlxState
 					// fixed Gold + 100
 					// weapon cards(100, 0, 0)
 					populateWeapon(weaponToChoose, 0, 20, 80);
-					populateStaticReward(300);
+					populateStaticReward(250);
 				}
 				else
 				{ // BOSS
 					// random weapon(0, 100, 0) fixed card
 					// fixed gold + 200
 					// unit capacity++
-					populateStaticReward(300);
+					populateStaticReward(400);
 					increaseUnitCap();
 					populateWeapon(weaponToChoose, 0, 0, 100);
+				}
+			case 6:
+				populateWeapon(weaponToChoose, 0, 0, 100);
+				populateStaticReward(1000);
+				if (level == 2)
+				{
+					increaseUnitCap();
 				}
 			case _:
 				return false;

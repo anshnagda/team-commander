@@ -50,7 +50,7 @@ class Buff
 		attacker.unit.maxHp += 50;
 		// also heal 50
 		attacker.unit.heal(50 + 50);
-		attacker.unit.currStats.addStat(new Stats(0, Std.int(30 * attacker.unit.enemyStatMultiplier), 0, 0, 0, 0));
+		attacker.unit.currStats.addStat(new Stats(0, Std.int(30 * attacker.unit.enemyLoseStatMultiplier), 0, 0, 0, 0));
 		// after every 3rd attack increases move by 1
 		if (attacker.numAttDone % 3 == 0)
 		{

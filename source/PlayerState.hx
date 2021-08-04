@@ -67,38 +67,40 @@ class PlayerState
 
 	var log:CapstoneLogger;
 	var logData:LoggingData;
-
-	var sound:FlxSound;
+	var sectionStarted = false;
+	var runID:Int = 0;
 
 	var userID:String;
 
 	var livesRemaining = 3;
 	var numberOfLosses = 0;
 
-	var versionPlayed:Int; // note: 0 = Version A -> 3 lives   1 = Version B -> Infinite Lives
+	var loseMult = 0;
+	var winMult = 0;
+	var clearedOnce = false;
+
+	var versionPlayed:Int; // note: 0 = Static   1 = Adaptive
+
+	var difficulty:Int = 0;
 
 	public function new()
 	{
-		sound = new FlxSound();
-		sound.volume = 0.3;
-		// PlayerState.tutorial = tutorial;
-
 		var unit = new Unit(20, 20, UnitData.unitIDs.get("warrior"), closestUnitSlotCoords); // change it so he is attached to bench
 		allied_units.add(unit);
 
 		if (Main.DEV_ENABLED)
 		{
-			for (i in 9...WeaponData.weaponNames.length)
-			{
-				var weapon = new Weapon(0, 0, i, closestWeaponSlotCoords);
-				weapons.add(weapon);
-			}
+			// for (i in 9...WeaponData.weaponNames.length)
+			// {
+			// 	var weapon = new Weapon(0, 0, i, closestWeaponSlotCoords);
+			// 	weapons.add(weapon);
+			// }
 
-			for (i in 14...24)
-			{
-				var unit = new Unit(20, 20, i, closestUnitSlotCoords);
-				allied_units.add(unit);
-			}
+			// for (i in 14...24)
+			// {
+			// 	var unit = new Unit(20, 20, i, closestUnitSlotCoords);
+			// 	allied_units.add(unit);
+			// }
 			// var unit = new Unit(20, 20, 5, closestUnitSlotCoords); // change it so he is attached to bench
 			// allied_units.add(unit);
 			// var unit = new Unit(20, 20, 5, closestUnitSlotCoords); // change it so he is attached to bench
@@ -111,8 +113,8 @@ class PlayerState
 			// allied_units.add(unit);
 
 			gold = 999999999;
-			current_stage = 5;
-			current_level = 5;
+			current_stage = 1;
+			current_level = 2;
 			// var unit = new Unit(20, 20, UnitData.unitIDs.get("warrior"), closestUnitSlotCoords); // change it so he is attached to bench
 			// allied_units.add(unit);
 
@@ -140,16 +142,31 @@ class PlayerState
 			// var weapon = new Weapon(0, 0, WeaponData.weaponIDs.get("tower shield"), closestWeaponSlotCoords);
 			// weapons.add(weapon);
 		}
-		log = new CapstoneLogger(202103, "teamcom", "a084a2b104ca9f35a535f65ed467d3c9", 5);
-		userID = log.getSavedUserId();
+		try
+		{
+			log = new CapstoneLogger(202103, "teamcom", "a084a2b104ca9f35a535f65ed467d3c9", 8); // 7 for the next release
+			userID = log.getSavedUserId();
+		}
+		catch (e)
+		{
+			userID = null;
+			trace("error in localstorage");
+		}
+
 		if (userID == null)
 		{
 			userID = log.generateUuid();
 		}
 		logData = new LoggingData(this);
-		log.setSavedUserId(userID);
-		versionPlayed = ((hashString(userID) % 2) + 2) % 2;
-		trace("Version: " + versionPlayed);
+		try
+		{
+			log.setSavedUserId(userID);
+		}
+		catch (e)
+		{
+			trace("error in localstorage");
+		}
+		versionPlayed = 0;
 
 		// var weapon = new Weapon(100, 20, 2, closestWeaponSlotCoords);
 		// weapons.add(weapon);
@@ -171,6 +188,19 @@ class PlayerState
 		advMergeResultSlot = new SlotGrid(1, 1, 48, 400, 150, "assets/images/tiles/board.png", 1.0);
 
 		numUnitsTextSprite = Font.makeText(battle_grid.x, 450, 384, "", 32, FlxColor.WHITE, FlxTextAlign.CENTER);
+	}
+
+	public function setDifficulty(diff:Int)
+	{
+		this.difficulty = diff;
+		if (difficulty == 1)
+		{
+			livesRemaining = 3;
+		}
+		if (difficulty == 2)
+		{
+			livesRemaining = 1;
+		}
 	}
 
 	function disableEverything()
@@ -399,36 +429,46 @@ class PlayerState
 		return closest_info;
 	}
 
-	function getMultiplier()
+	public function lose()
 	{
-		// version A
-		if (this.versionPlayed == 0)
+		this.loseMult++;
+		this.winMult--;
+		this.winMult--;
+		loseMult = Math.round(Math.min(5, loseMult));
+		winMult = Math.round(Math.max(0, winMult));
+	}
+
+	public function win()
+	{
+		this.loseMult--;
+		loseMult = Math.round(Math.max(0, loseMult));
+		if (loseMult == 0 && current_stage != 1)
 		{
-			if (livesRemaining == 3)
-			{
-				return 1.0;
-			}
-			else if (livesRemaining == 2)
-			{
-				return 0.9;
-			}
-			else if (livesRemaining == 1)
-			{
-				return 0.8;
-			}
-			return 0.7;
+			winMult++;
+			winMult = Math.round(Math.min(6, winMult));
 		}
-		else
+	}
+
+	function getLoseMultiplier()
+	{
+		if (difficulty == 0)
 		{
-			if (numberOfLosses <= 5)
-			{
-				return -numberOfLosses * 0.1 + 1;
-			}
-			else
-			{
-				return 0.5;
-			}
+			return Math.max(0.6, -loseMult * 0.1 + 1);
 		}
+		return 1.0;
+	}
+
+	function getWinMultiplier()
+	{
+		if (difficulty == 0)
+		{
+			return Math.min(1.24, winMult * 0.04 + 1);
+		}
+		if (difficulty == 1)
+		{
+			return 1.0;
+		}
+		return 1.24;
 	}
 
 	public static function hashString(str:String)

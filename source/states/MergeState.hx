@@ -2,8 +2,10 @@ package states;
 
 import attachingMechanism.Snappable;
 import attachingMechanism.SnappableInfo;
+import entities.TutorialBox;
 import entities.Unit;
 import entities.Weapon;
+import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.addons.ui.FlxButtonPlus;
@@ -14,6 +16,7 @@ import flixel.util.FlxColor;
 import flixel.util.FlxColor;
 import haxe.Constraints.Function;
 import haxe.Timer;
+import js.Browser;
 import js.html.NodeList;
 import nape.geom.AABB;
 import rewardCards.UnitCard;
@@ -26,6 +29,7 @@ class MergeState extends BenchAndInventoryState
 {
 	var return_button:FlxButtonPlus;
 	var open_shop_button:FlxButtonPlus;
+	var open_recipe_button:FlxButtonPlus;
 	var confirm_merge_button:FlxButtonPlus;
 	var adv_confirm_merge_button:FlxButtonPlus;
 
@@ -58,6 +62,8 @@ class MergeState extends BenchAndInventoryState
 			removeAll();
 			openShopCallback();
 		}, "SHOP", 16);
+
+		this.open_recipe_button = Buttons.makeButton(playerState.inventory.x + 40, 500, 64, 32, openRecipe, "RECIPES", 16);
 		this.return_button = Buttons.makeButton(playerState.inventory.x + 40, 400, 64, 32, return_to_level, "RETURN", 16);
 		this.confirm_merge_button = Buttons.makeButton(playerState.mergeResultSlot.x + 64, playerState.mergeSlot1.y + 12, 64, 32, confirm_merge, "MERGE!", 16);
 		this.adv_confirm_merge_button = Buttons.makeButton(playerState.advMergeResultSlot.x + 64, playerState.advMergeSlot1.y + 12, 64, 32, adv_confirm_merge,
@@ -132,6 +138,7 @@ class MergeState extends BenchAndInventoryState
 		{
 			add(open_shop_button);
 		}
+		add(open_recipe_button);
 	}
 
 	function confirm_merge()
@@ -186,6 +193,9 @@ class MergeState extends BenchAndInventoryState
 			error_text.color = FlxColor.GREEN;
 			remove(confirm_merge_button);
 			merge_ongoing = false;
+			#if js
+			StoreData.tryStore("merge" + Std.string(new_unit_id), "1");
+			#end
 		}
 	}
 
@@ -241,6 +251,10 @@ class MergeState extends BenchAndInventoryState
 			adv_error_text.color = FlxColor.GREEN;
 			remove(adv_confirm_merge_button);
 			merge_ongoing = false;
+
+			#if js
+			StoreData.tryStore("merge" + Std.string(new_unit_id), "1");
+			#end
 		}
 	}
 
@@ -416,5 +430,23 @@ class MergeState extends BenchAndInventoryState
 	{
 		removeAll();
 		endLevel(true);
+	}
+
+	function openRecipe()
+	{
+		var mouseEventManager = FlxG.plugins.get(FlxMouseEventManager);
+		// FlxG.plugins.remove(mouseEventManager);
+
+		openSubState(new RecipeState(function(success:Bool = true)
+		{
+			closeSubState();
+			// FlxG.plugins.add(mouseEventManager);
+			if (!success)
+			{
+				var notice = new TutorialBox("No recipes unlocked yet! Merge some of your units to get started.", 300, 225, "assets/images/box.png", false);
+				add(notice);
+				Timer.delay(() -> remove(notice), 2000);
+			}
+		}, playerState));
 	}
 }

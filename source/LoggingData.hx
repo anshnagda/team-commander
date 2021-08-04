@@ -4,11 +4,22 @@ import haxe.ds.Vector;
 
 class LoggingData
 {
+	// let me merge bastards
 	/* Action log aid descriptors 
 		1 -- UNIT MERGE --
 		2 -- UNIT PURCHASE --
 		3 -- UNIT SALE --
-		4 -- WEAPON SALE -- 
+		4 -- WEAPON SALE --
+		6 -- BATTLE W/O UNITS -- 
+		7 -- BATTLE --
+		11 -- TUTORIAL CLICK --
+		21 -- SLOT ATTACH -- 
+		22 -- SLOT DETACH --  
+		100 -> click on Start
+		200 -> click on load
+		300 -> click on setting
+		101 -> new game for player that cleared once
+		102 -> skip stage 1
 	 */
 	private var units:Array<String>;
 	private var weapons:Array<String>;
@@ -68,7 +79,7 @@ class LoggingData
 		{
 			for (j in 0...8)
 			{
-				if (grid[i][j] != null )
+				if (grid[i][j] != null)
 				{
 					var unit = grid[i][j];
 					var data = {
@@ -77,9 +88,12 @@ class LoggingData
 						x: i,
 						y: j
 					};
-					if (!unit.enemy) {
+					if (!unit.enemy)
+					{
 						friePlacement.push(data);
-					} else {
+					}
+					else
+					{
 						enePlacement.push(data);
 					}
 				}
@@ -91,6 +105,8 @@ class LoggingData
 	{
 		return {
 			version: this.player.versionPlayed,
+			winMult: this.player.winMult,
+			loseMult: this.player.loseMult,
 			units: this.units,
 			weapons: this.weapons,
 			number_of_losses: this.player.numberOfLosses,
@@ -98,7 +114,8 @@ class LoggingData
 			friePlacement: this.friePlacement,
 			enePlacement: this.enePlacement,
 			number_of_unequiped: numOfUnequipWeap,
-			lives_remaining: player.livesRemaining
+			lives_remaining: player.livesRemaining,
+			runID: player.runID
 		}
 	}
 }

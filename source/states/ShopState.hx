@@ -130,17 +130,21 @@ class ShopState extends BenchAndInventoryState
 				t1 = 90;
 				t2 = 10;
 			case 3:
-				t1 = 75;
-				t2 = 25;
+				t1 = 85;
+				t2 = 15;
 				t3 = 0;
 			case 4:
-				t1 = 60;
-				t2 = 30;
-				t3 = 10;
+				t1 = 80;
+				t2 = 20;
+				t3 = 0;
 			case 5:
-				t1 = 50;
+				t1 = 70;
+				t2 = 25;
+				t3 = 5;
+			case 6:
+				t1 = 45;
 				t2 = 35;
-				t3 = 15;
+				t3 = 20;
 		}
 		for (i in 0...3)
 		{
@@ -342,7 +346,7 @@ class ShopState extends BenchAndInventoryState
 				playerState.addUnit(card.getUnit());
 				playerState.removeGold(PRICE[card.getUnit().rarity]);
 				card.getUnit().findSlot = this.playerState.closestUnitSlotCoords;
-
+				StoreData.tryStore("merge" + Std.string(card.getUnit().unitID), "1");
 				// log the unit purchase
 				if (!Main.DEV_ENABLED)
 				{
@@ -440,6 +444,17 @@ class ShopState extends BenchAndInventoryState
 		{
 			// sell a unit
 			var unit = cast(item, Unit);
+			if (unit.weaponSlot1.isOccupied)
+			{
+				var wep = cast(unit.weaponSlot1.attachedSnappable, Weapon);
+				wep.detach();
+			}
+
+			if (unit.weaponSlot2.isOccupied)
+			{
+				var wep = cast(unit.weaponSlot2.attachedSnappable, Weapon);
+				wep.detach();
+			}
 			playerState.removeUnit(unit);
 
 			unit.isBeingHovered = false;
@@ -451,6 +466,9 @@ class ShopState extends BenchAndInventoryState
 			unit.disable();
 
 			playerState.addGold(Std.int(PRICE[unit.rarity] / 2));
+
+			super.removeAll();
+			super.create();
 
 			// log the unit sale
 			if (!Main.DEV_ENABLED)

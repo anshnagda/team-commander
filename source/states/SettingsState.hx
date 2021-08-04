@@ -69,7 +69,7 @@ class SettingsState extends FlxSubState
 
 		volumeUpButton = Buttons.makeButton(volumeBar.x + volumeBar.width + 8, volumeDownButton.y, 20, 20, clickVolumeUp, "+", 16);
 
-		volumeAmountText = Font.makeText(boundingBox.x, volumeUpButton.y, boundingBox.width, (FlxG.sound.volume * 100) + "%", 16);
+		volumeAmountText = Font.makeText(boundingBox.x, volumeUpButton.y, boundingBox.width, (Main.sound.volume * 100) + "%", 16);
 
 		speedText = Font.makeText(boundingBox.x + 50, volumeText.y + 60, 0, "Animation Speed", 16);
 		speedDownButton = Buttons.makeButton(speedText.x + 16, speedText.y + speedText.height + 2, 20, 20, clickSpeedDown, "-", 16);
@@ -141,6 +141,7 @@ class SettingsState extends FlxSubState
 		disabled_button.updateActiveButtonColors([0xFFA0A0A0, 0xFFA0A0A0]);
 		enabled_button.updateInactiveButtonColors([FlxColor.GREEN, FlxColor.GREEN]);
 		enabled_button.updateActiveButtonColors([0xff718f00, 0xff718f00]);
+		StoreData.tryStore("tutorial", Std.string(PlayerState.tutorial));
 	}
 
 	function closeSettings()
@@ -150,21 +151,23 @@ class SettingsState extends FlxSubState
 
 	function clickVolumeUp()
 	{
-		playerState.sound.volume += 0.1;
+		Main.sound.volume += 0.1;
 		updateVolume();
 	}
 
 	function clickVolumeDown()
 	{
-		playerState.sound.volume -= 0.1;
+		Main.sound.volume -= 0.1;
 		updateVolume();
 	}
 
 	function updateVolume()
 	{
-		var volume:Int = Math.round(playerState.sound.volume* 100);
+		var volume:Int = Math.round(Main.sound.volume * 100);
 		volumeBar.value = volume;
 		volumeAmountText.text = volume + "%";
+
+		StoreData.tryStore("volume", Std.string(Main.sound.volume));
 	}
 
 	function clickSpeedUp()
@@ -191,5 +194,7 @@ class SettingsState extends FlxSubState
 		var speed = round(playerState.battle_grid.animation_speed);
 		speedBar.value = speed;
 		speedAmountText.text = speed + "x";
+
+		StoreData.tryStore("speed", Std.string(speed));
 	}
 }

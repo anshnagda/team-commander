@@ -27,9 +27,11 @@ class Unit extends Snappable
 	var unitID:Int;
 	var healthBar:HealthBar;
 	var maxHp:Int;
+	var maxAtk:Int;
 
 	// Enemy details
-	var enemyStatMultiplier:Float = 1.0;
+	var enemyLoseStatMultiplier:Float = 1.0;
+	var enemyWinStateMultiplier:Float = 1.0;
 	var enemy:Bool;
 
 	var weaponSlot1:Slot = null;
@@ -49,14 +51,15 @@ class Unit extends Snappable
 
 	var original_image:BitmapData;
 
-	public function new(x:Float, y:Float, unitID:Int, closestSlotCoords, enemyStatMultiplier = 1.0):Void
+	public function new(x:Float, y:Float, unitID:Int, closestSlotCoords, enemyLoseStatMultiplier = 1.0, enemyWinStatMultiplier = 1.0):Void
 	{
 		super(x, y, true, closestSlotCoords);
 		// Base info
 		enemy = false;
 		this.unitID = unitID;
 		this.unitName = UnitData.unitNames[unitID];
-		this.enemyStatMultiplier = enemyStatMultiplier;
+		this.enemyLoseStatMultiplier = enemyLoseStatMultiplier;
+		this.enemyWinStateMultiplier = enemyWinStatMultiplier;
 
 		// Graphics
 		this.clicked_graphics = function() {};
@@ -123,7 +126,8 @@ class Unit extends Snappable
 	public function makeEnemy()
 	{
 		this.enemy = true;
-		baseStats.atk = Math.round(baseStats.atk * enemyStatMultiplier);
+		baseStats.atk = Math.round(baseStats.atk * enemyLoseStatMultiplier);
+		baseStats.hp = Math.round(baseStats.hp * this.enemyWinStateMultiplier);
 		this.pixels = UnitData.enemyOutlineEffect(this.original_image);
 		updateStats();
 	}
@@ -144,6 +148,7 @@ class Unit extends Snappable
 		}
 		healthBar.setRange(0, this.currStats.hp);
 		maxHp = this.currStats.hp;
+		maxAtk = this.currStats.atk;
 	}
 
 	public function enableBattleSprites()

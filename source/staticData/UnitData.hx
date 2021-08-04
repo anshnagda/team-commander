@@ -83,9 +83,9 @@ class UnitData
 		switch unitNames[id]
 		{
 			case "warrior":
-				return new Stats(300, 75, 1, 1, 1, 1);
+				return new Stats(300, 80, 1, 1, 1, 1);
 			case "archer":
-				return new Stats(150, 125, 2, 3, 1, 1);
+				return new Stats(150, 120, 2, 3, 1, 1);
 			case "thief":
 				return new Stats(150, 125, 1, 1, 2, 3);
 			case "mage":
@@ -97,15 +97,15 @@ class UnitData
 			case "rogue":
 				return new Stats(225, 150, 1, 1, 2, 4);
 			case "warlock":
-				return new Stats(225, 150, 1, 2, 1, 2);
+				return new Stats(225, 140, 1, 2, 1, 2);
 			case "bard":
-				return new Stats(200, 100, 1, 2, 1, 2);
+				return new Stats(200, 95, 1, 2, 1, 2);
 			case "priestess":
 				return new Stats(300, 100, 1, 2, 1, 0);
 			case "slayer":
-				return new Stats(275, 100, 1, 2, 2, 2);
+				return new Stats(275, 110, 1, 2, 2, 2);
 			case "ranger":
-				return new Stats(200, 150, 2, 3, 2, 3, 50);
+				return new Stats(200, 130, 2, 3, 2, 3, 50);
 			case "samurai":
 				return new Stats(250, 75, 1, 1, 2, 3);
 			case "duelist":
@@ -113,53 +113,53 @@ class UnitData
 			case "paragon":
 				return new Stats(550, 125, 1, 1, 1, 2, 0, 0, 0, 0, 12);
 			case "artillery":
-				return new Stats(275, 225, 2, 4, 1, 2);
+				return new Stats(275, 215, 2, 4, 1, 2);
 			case "assassin":
 				return new Stats(350, 275, 1, 1, 3, 5);
 			case "archmage":
-				return new Stats(300, 175, 1, 3, 1, 3);
+				return new Stats(300, 200, 1, 3, 1, 3);
 			case "laureate":
-				return new Stats(275, 150, 1, 2, 2, 4);
+				return new Stats(275, 140, 1, 2, 2, 4);
 			case "exarch":
 				return new Stats(450, 150, 1, 2, 2, 2);
 			case "bloodmancer":
 				return new Stats(350, 150, 1, 2, 2, 3);
 			case "enforcer":
-				return new Stats(300, 200, 2, 3, 2, 4, 100, 0, 0, 2);
+				return new Stats(300, 175, 2, 3, 2, 4, 100, 0, 0, 2);
 			case "shogun":
 				return new Stats(300, 100, 1, 1, 3, 3);
 			case "valkyrie":
-				return new Stats(350, 175, 1, 1, 2, 4, 0, 75);
+				return new Stats(350, 175, 1, 2, 2, 4, 0, 75);
 			case "all-seeing eye":
 				return new Stats(1000, 120, 0, 100, 0, 1);
 			case "slime":
-				return new Stats(30, 5, 1, 1, 1, 1);
+				return new Stats(32, 5, 1, 1, 1, 1);
 			case "champion":
 				return new Stats(1800, 100, 1, 1, 3, 1);
 			case "mothership":
-				return new Stats(2250, 200, 1, 5, 1, 1);
+				return new Stats(2000, 150, 1, 5, 1, 1);
 			case "alien":
-				return new Stats(200, 120, 1, 3, 1, 6);
+				return new Stats(190, 90, 1, 3, 1, 6);
 			case "thunder spirit":
 				return new Stats(5000, 350, 0, 99, 0, 99, 0, 0, 0, 2);
 			case "pawn":
 				return new Stats(150, 0, 0, 0, 0, 1);
 			case "king":
-				return new Stats(3500, 150, 1, 1, 2, 8);
+				return new Stats(3000, 150, 1, 1, 2, 8);
 			case "queen":
-				return new Stats(500, 225, 1, 1, 20, 10);
+				return new Stats(500, 175, 1, 1, 20, 10);
 			case "ashen lord":
-				return new Stats(3500, 250, 1, 99, 0, 1, 100);
+				return new Stats(3000, 200, 1, 99, 0, -5, 100);
 			case "fire elemental":
-				return new Stats(500, 50, 1, 5, 0, 0);
+				return new Stats(350, 50, 1, 5, 0, -5);
 			case "joker":
-				return new Stats(1250, 225, 1, 2, 3, 3);
+				return new Stats(1500, 275, 1, 2, 3, 3);
 			case "overlord":
 				return new Stats(3000, 250, 0, 99, 0, 5);
 			case "withering soul":
-				return new Stats(750, 150, 1, 1, 10, 10);
+				return new Stats(600, 150, 1, 1, 10, 10);
 			case "the exalted one":
-				return new Stats(7500, 350, 1, 4, 3, 25);
+				return new Stats(6666, 350, 1, 4, 3, 25);
 			case _:
 				return new Stats(1, 1, 1, 1, 1, 1);
 		}
@@ -181,11 +181,11 @@ class UnitData
 				return ["Also deals 50% damage to all enemies within 1 block of target enemy"];
 			case "bard":
 				return [
-					"Allies within 3 columns centered on unit also get 50% of my attack (" + Math.round(unit.currStats.atk * 0.50) + ")"
+					"Allies within 3 columns centered on unit also get 50% of my attack (" + Math.round(unit.maxAtk * 0.50) + ")"
 				];
 			case "priestess":
 				return [
-					"Every 2 turns, heal me and allies within 2 squares for 50 + 25% of my health (" + Math.round(50 + unit.currStats.atk / 4) + ")"
+					"Every 2 turns, heal me and allies within 2 squares for 50 + 25% of my health (" + Math.round(50 + (unit.maxHp / 4)) + ")"
 				];
 			case "slayer":
 				return [
@@ -199,7 +199,7 @@ class UnitData
 				return ["Heals for 50% of damage dealt"];
 			case "paragon":
 				return [
-					"Take 12% of my health (" + Math.round(0.12 * unit.currStats.hp) + ") less damage from hits",
+					"Take 12% of my health (" + Math.round(0.12 * unit.maxHp) + ") less damage from hits",
 					"Redirects 50% of damage from adjacent allies to me"
 				];
 			case "artillery":
@@ -219,14 +219,14 @@ class UnitData
 				];
 			case "laureate":
 				return [
-					"Allies within 3 columns centered on unit get 75% of Laureate's attack (" + Math.round(unit.currStats.atk * 0.75) +
+					"Allies within 3 columns centered on unit get 75% of Laureate's attack (" + Math.round(unit.maxAtk * 0.75) +
 					") 1 extra range, and 1 extra move"
 				];
 			case "exarch":
 				return ["Every 2 turns, heal Exarch and all allies within 3 blocks 30% of Exarch's health ("
-					+ Math.round(unit.currStats.hp * 0.30)
+					+ Math.round(unit.maxHp * 0.30)
 					+ ") and grants a shield equal to 15% of Exarch's health ("
-					+ Math.round(unit.currStats.hp * 0.15)
+					+ Math.round(unit.maxHp * 0.15)
 					+ ")"];
 			case "bloodmancer":
 				return ["When an ally or an enemy dies, gain 40 attack and 50 hp this battle",
@@ -243,7 +243,7 @@ class UnitData
 			case "shogun":
 				return [
 					"I Strike twice when I attack",
-					"At the start of battle, create an exact clone of myself on a nearby square. The clone has half my attack and hp"
+					"At the start of battle, create an exact clone of myself on a opposite square. The clone has half my attack and hp"
 				];
 			case "valkyrie":
 				return [
@@ -292,7 +292,7 @@ class UnitData
 					"Debuff enemies on hit, reducing their attack by 25%, range by 1, and move by 1 for 1 turn"
 				];
 			case "the exalted one":
-				return ["At the end of turn, spawn a copy of myself with half the health"];
+				return ["Every 3 turns, spawn a copy of myself with half the health"];
 			case _:
 				return [];
 		}
@@ -357,6 +357,74 @@ class UnitData
 		}
 
 		return 0;
+	}
+
+	public static function getMergeIngredients(unit:String)
+	{
+		if (unitToRarity[unitIDs.get(unit)] == "master")
+		{
+			switch unit
+			{
+				case "paragon":
+					var x = "knight";
+					return [x, x, x];
+				case "artillery":
+					var x = "sniper";
+					return [x, x, x];
+				case "assassin":
+					var x = "rogue";
+					return [x, x, x];
+				case "archmage":
+					var x = "warlock";
+					return [x, x, x];
+				case "laureate":
+					var x = "bard";
+					return [x, x, x];
+				case "exarch":
+					var x = "priestess";
+					return [x, x, x];
+				case "bloodmancer":
+					var x = "slayer";
+					return [x, x, x];
+				case "enforcer":
+					var x = "ranger";
+					return [x, x, x];
+				case "shogun":
+					var x = "samurai";
+					return [x, x, x];
+				case "valkyrie":
+					var x = "duelist";
+					return [x, x, x];
+			}
+		}
+		else if (unitToRarity[unitIDs.get(unit)] == "advanced")
+		{
+			switch unit
+			{
+				case "knight":
+					return ["warrior", "warrior"];
+				case "sniper":
+					return ["archer", "archer"];
+				case "rogue":
+					return ["thief", "thief"];
+				case "warlock":
+					return ["mage", "mage"];
+				case "bard":
+					return ["archer", "mage"];
+				case "priestess":
+					return ["warrior", "mage"];
+				case "slayer":
+					return ["thief", "mage"];
+				case "ranger":
+					return ["archer", "thief"];
+				case "samurai":
+					return ["warrior", "thief"];
+				case "duelist":
+					return ["warrior", "archer"];
+			}
+		}
+
+		return [];
 	}
 
 	public static function mergeResult(id1:Int, id2:Int)

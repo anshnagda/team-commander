@@ -9,6 +9,7 @@ import flixel.FlxBasic;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup;
+import flixel.input.mouse.FlxMouseEventManager;
 import flixel.math.FlxAngle;
 import flixel.math.FlxPoint;
 import flixel.math.FlxVelocity;
@@ -63,6 +64,7 @@ class BattleGrid extends SlotGrid
 	var projectiles:FlxGroup = new FlxGroup();
 	var square_effects:FlxGroup = new FlxGroup();
 	var summoned_units:FlxGroup = new FlxGroup();
+	var summoned_unit_hover:FlxGroup = new FlxGroup();
 	var arrow:FlxSprite;
 	var fireball:FlxSprite;
 
@@ -79,6 +81,12 @@ class BattleGrid extends SlotGrid
 
 	public function new(gridSize:Int, x:Int, y:Int, disableEverything:Function, graphicsSource:String, playerState:PlayerState)
 	{
+		var spd = StoreData.tryLoad("speed");
+		if (spd != null)
+		{
+			setSpeed(Std.parseFloat(spd));
+		}
+
 		this.playerState = playerState;
 
 		// all the slots in this battlegrid will update this.numUnits after being attached
@@ -87,7 +95,10 @@ class BattleGrid extends SlotGrid
 			var snap = cast(snap, Unit);
 			if (!snap.enemy)
 			{
-				playerState.log.logLevelAction(21, snap.unitName);
+				if (!Main.DEV_ENABLED)
+				{
+					playerState.log.logLevelAction(21, snap.unitName);
+				}
 				this.numUnits += 1;
 				this.updateTextSprite();
 			}
@@ -99,7 +110,10 @@ class BattleGrid extends SlotGrid
 			var snap = cast(snap, Unit);
 			if (!snap.enemy)
 			{
-				playerState.log.logLevelAction(22, snap.unitName);
+				if (!Main.DEV_ENABLED)
+				{
+					playerState.log.logLevelAction(22, snap.unitName);
+				}
 				this.numUnits -= 1;
 				this.updateTextSprite();
 			}
@@ -249,7 +263,7 @@ class BattleGrid extends SlotGrid
 		if (col >= 7)
 		{
 			projectile.kill();
-			projectiles.remove(projectile);
+			projectiles.remove(projectile, true);
 			return;
 		}
 		if (unitGrid[row][col] != null)
@@ -257,7 +271,7 @@ class BattleGrid extends SlotGrid
 			if (unitGrid[row][col].enemy == false)
 			{
 				projectile.kill();
-				projectiles.remove(projectile);
+				projectiles.remove(projectile, true);
 				return;
 			}
 		}
@@ -340,6 +354,18 @@ class BattleGrid extends SlotGrid
 		unitGrid[location.x][location.y] = summoned_unit;
 
 		FlxTween.tween(summoned_unit, {alpha: 1.0}, 0.15);
+		summoned_unit.showHover = function()
+		{
+			summoned_unit_hover.add(summoned_unit.hover);
+			summoned_unit_hover.add(summoned_unit.hover.getTexts());
+		}
+		summoned_unit.hideHover = function()
+		{
+			summoned_unit_hover.remove(summoned_unit.hover, true);
+			summoned_unit_hover.remove(summoned_unit.hover.getTexts(), true);
+		}
+		FlxMouseEventManager.add(summoned_unit, summoned_unit.mouseDown, summoned_unit.mouseUp, summoned_unit.mouseOver, summoned_unit.mouseOut);
+
 		return summoned_unit;
 	}
 
@@ -348,7 +374,8 @@ class BattleGrid extends SlotGrid
 		var zombie = new Unit(0, 0, UnitData.unitIDs.get("zombie"), null);
 		if (isEnemy)
 		{
-			zombie.enemyStatMultiplier = playerState.getMultiplier();
+			zombie.enemyLoseStatMultiplier = playerState.getLoseMultiplier();
+			zombie.enemyWinStateMultiplier = playerState.getWinMultiplier();
 			zombie.makeEnemy();
 		}
 		zombie.baseStats.atk = atk;
@@ -363,7 +390,8 @@ class BattleGrid extends SlotGrid
 		var new_shogun = new Unit(0, 0, UnitData.unitIDs.get("shogun"), null);
 		if (shogun_to_copy.enemy)
 		{
-			new_shogun.enemyStatMultiplier = playerState.getMultiplier();
+			new_shogun.enemyLoseStatMultiplier = playerState.getLoseMultiplier();
+			new_shogun.enemyWinStateMultiplier = playerState.getWinMultiplier();
 			new_shogun.makeEnemy();
 		}
 		if (shogun_to_copy.weaponSlot1.isOccupied)
@@ -393,7 +421,8 @@ class BattleGrid extends SlotGrid
 	public function summon_queen(location:Point)
 	{
 		var queen = new Unit(0, 0, UnitData.unitIDs.get("queen"), null);
-		queen.enemyStatMultiplier = playerState.getMultiplier();
+		queen.enemyLoseStatMultiplier = playerState.getLoseMultiplier();
+		queen.enemyWinStateMultiplier = playerState.getWinMultiplier();
 		queen.makeEnemy();
 		return summon_unit(queen, location);
 	}
@@ -401,7 +430,8 @@ class BattleGrid extends SlotGrid
 	public function summon_alien(location:Point)
 	{
 		var alien = new Unit(0, 0, UnitData.unitIDs.get("alien"), null);
-		alien.enemyStatMultiplier = playerState.getMultiplier();
+		alien.enemyLoseStatMultiplier = playerState.getLoseMultiplier();
+		alien.enemyWinStateMultiplier = playerState.getWinMultiplier();
 		alien.makeEnemy();
 		return summon_unit(alien, location);
 	}
@@ -409,7 +439,8 @@ class BattleGrid extends SlotGrid
 	public function summon_withering(location:Point)
 	{
 		var alien = new Unit(0, 0, UnitData.unitIDs.get("withering soul"), null);
-		alien.enemyStatMultiplier = playerState.getMultiplier();
+		alien.enemyLoseStatMultiplier = playerState.getLoseMultiplier();
+		alien.enemyWinStateMultiplier = playerState.getWinMultiplier();
 		alien.makeEnemy();
 		return summon_unit(alien, location);
 	}
@@ -417,7 +448,8 @@ class BattleGrid extends SlotGrid
 	public function summon_exalted(location:Point)
 	{
 		var alien = new Unit(0, 0, UnitData.unitIDs.get("the exalted one"), null);
-		alien.enemyStatMultiplier = playerState.getMultiplier();
+		alien.enemyLoseStatMultiplier = playerState.getLoseMultiplier();
+		alien.enemyWinStateMultiplier = playerState.getWinMultiplier();
 		alien.makeEnemy();
 		return summon_unit(alien, location);
 	}
@@ -693,6 +725,9 @@ class BattleGrid extends SlotGrid
 		{
 			unit.kill();
 		});
+
+		summoned_units.clear();
+		summoned_unit_hover.clear();
 
 		for (unit in playerState.allied_units)
 		{

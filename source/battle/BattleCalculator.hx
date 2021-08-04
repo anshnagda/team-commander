@@ -155,7 +155,7 @@ class BattleCalculator extends FlxSprite
 		{
 			unitStates[unit].freeze--;
 			unitList.add(unit);
-			unitStates[unit].turnCompleted++;
+			unitStates[unit].turnFinished();
 			Timer.delay(onComplete, battleGrid.RANDOM_DELAY);
 			return;
 		}
@@ -252,7 +252,7 @@ class BattleCalculator extends FlxSprite
 				unitList.add(unit);
 			}
 			if (unitStates.get(unit) != null) {
-				unitStates.get(unit).turnCompleted++;
+				unitStates.get(unit).turnFinished();
 			}
 			if (buffed)
 			{
@@ -309,7 +309,7 @@ class BattleCalculator extends FlxSprite
 		{
 			frieNo -= dead.length;
 		}
-		unitStates.get(unit).turnCompleted++;
+		unitStates.get(unit).turnFinished();
 		Timer.delay(onComplete, Std.int(battleGrid.MOVE_DURATION * 1000));
 	}
 
