@@ -1,3 +1,7 @@
-# game-jam-template
+## Team Commander
 
-[![CI](https://img.shields.io/github/workflow/status/HaxeFlixel/game-jam-template/CI.svg?logo=github)](https://github.com/anshnagda/team-commander/actions?query=workflow%3ACI)
+Team Commander is a deck-builder auto-battler we built for our Games capstone at UW.
+
+- https://www.newgrounds.com/portal/view/798381
+- https://anshnagda.github.io/team-commander/
+
